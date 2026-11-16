@@ -25,3 +25,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Ảnh banner tải lên từ trang quản trị (nằm trên máy chủ, không đưa vào git)
+/public/images/banners/uploads/*
+!/public/images/banners/uploads/.gitkeep

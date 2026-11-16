@@ -16,6 +16,15 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 - **Trang chủ chia khối theo danh mục:** mỗi danh mục bật `show_on_home` là một khối chỉ **1 hàng** (5 sản phẩm trên máy tính, 2 trên điện thoại). Có tối đa 15 sản phẩm, trượt qua lại bằng nút hai bên hoặc vuốt; cuối hàng có ô "Xem thêm N sản phẩm".
 - **Thẻ sản phẩm:** ảnh · tên (2 dòng) · giá gốc gạch ngang + % giảm · giá đỏ · nút "Báo giá". Một lớp viền, không lồng khung.
 
+### Quản trị banner trên trình duyệt
+
+1. Đặt mật khẩu trong `.env`: `ADMIN_PASSWORD="mat-khau-manh"` (để trống = tắt khu quản trị), rồi chạy `php artisan config:clear`.
+2. Vào **/quan-tri** → đăng nhập → **Banner trang chủ**.
+3. Chọn ảnh (1170 × 500 px, JPG/PNG/WebP, tối đa 2 MB), nhập tiêu đề, link khi bấm, thứ tự → **Tải lên banner**. Có xem trước ảnh theo đúng khung trang chủ.
+4. Từng banner: sửa tiêu đề/link/thứ tự, thêm ảnh riêng cho điện thoại, bỏ chọn "Hiển thị" để ẩn, hoặc xóa (xóa luôn file ảnh).
+
+Ảnh tải lên lưu ở `public/images/banners/uploads/` (không đưa vào git). Chưa có banner nào tải lên (hoặc ẩn hết) thì trang chủ dùng ảnh trong thư mục `public/images/banners/`. Trang quản trị được chặn Google (`robots.txt` + `noindex`) và giới hạn 5 lần đăng nhập/phút.
+
 ### Chèn logo và banner (chép file vào là hiện, không cần sửa code)
 
 | Vị trí | Đặt file vào | Kích thước khuyến nghị |

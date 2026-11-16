@@ -40,7 +40,7 @@ class SitemapController extends Controller
     public function robots(): Response
     {
         $body = app()->environment('production')
-            ? "User-agent: *\nDisallow: /tim-kiem\nDisallow: /bao-gia/cam-on\n\nSitemap: ".route('sitemap')."\n"
+            ? "User-agent: *\nDisallow: /tim-kiem\nDisallow: /bao-gia/cam-on\nDisallow: /quan-tri\n\nSitemap: ".route('sitemap')."\n"
             : "User-agent: *\nDisallow: /\n"; // chặn index khi chạy thử nghiệm
 
         return response($body, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
