@@ -80,14 +80,41 @@ Alpine.data('quotePage', (lookupUrl) => ({
 /*
  * Băng chuyền trượt ngang (tin tức...): dùng cuộn gốc của trình duyệt + scroll-snap,
  * nút trái/phải cuộn đúng 1 "trang", chấm tròn theo số trang.
+ * Tùy chọn: x-data="carousel({ autoplay: 4000 })" -> tự chuyển trang mỗi 4 giây khi có
+ * nhiều hơn 1 trang; tạm dừng khi rê chuột, chạm hoặc dùng bàn phím trong khối.
  */
-Alpine.data('carousel', () => ({
+Alpine.data('carousel', (opts = {}) => ({
     page: 0,
     pages: 1,
     arrowTop: 0, // nút trái/phải đặt giữa chiều cao ảnh
+    paused: false,
+    timer: null,
     init() {
         this.measure();
         window.addEventListener('resize', () => this.measure());
+
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (opts.autoplay && !reduceMotion) {
+            const pause = () => (this.paused = true);
+            const resume = () => (this.paused = false);
+            this.$el.addEventListener('mouseenter', pause);
+            this.$el.addEventListener('mouseleave', resume);
+            this.$el.addEventListener('focusin', pause);
+            this.$el.addEventListener('focusout', resume);
+            // Trên điện thoại: chạm vào thì dừng, 6 giây sau tự chạy tiếp.
+            this.$el.addEventListener('touchstart', () => {
+                pause();
+                clearTimeout(this._resume);
+                this._resume = setTimeout(resume, 6000);
+            }, { passive: true });
+            this.timer = setInterval(() => {
+                if (!this.paused && this.pages > 1 && !document.hidden) this.go(this.page + 1);
+            }, opts.autoplay);
+        }
+    },
+    destroy() {
+        clearInterval(this.timer);
+        clearTimeout(this._resume);
     },
     gap() {
         return parseFloat(getComputedStyle(this.$refs.track).columnGap) || 0;

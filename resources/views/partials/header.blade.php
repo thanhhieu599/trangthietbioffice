@@ -86,10 +86,14 @@
                     <x-icon name="chevron-down" class="h-4 w-4 transition" ::class="open && 'rotate-180'" />
                 </button>
 
-                <ul class="absolute top-full left-0 z-40 w-full bg-ink-800 py-1.5 text-[14px] shadow-lg {{ $isHome ? 'h-[412px]' : '' }}"
+                {{-- Trang chủ: menu cao bằng banner, hiện tối đa $homeLimit mục; nhiều hơn thì có nút "Xem thêm" để mở hết --}}
+                @php($homeLimit = 9)
+                @php($homeMore = $isHome && $menuCategories->count() > $homeLimit + 1)
+                <ul class="absolute top-full left-0 z-40 w-full bg-ink-800 py-1.5 text-[14px] shadow-lg {{ $isHome ? 'min-h-[412px]' : '' }}"
+                    x-data="{ all: false }"
                     x-show="open" @if (! $isHome) x-cloak x-transition.opacity @endif>
-                    @foreach ($menuCategories as $cat)
-                        <li class="group/item">
+                    @foreach ($menuCategories as $i => $cat)
+                        <li class="group/item" @if ($homeMore && $i >= $homeLimit) x-show="all" x-cloak @endif>
                             <a href="{{ $cat['url'] }}" class="flex items-center justify-between px-4 py-2 text-neutral-100 hover:bg-primary-600 hover:text-white">
                                 <span>{{ $cat['name'] }}</span>
                                 @if (! empty($cat['children']))<x-icon name="chevron-right" class="h-4 w-4 opacity-70" />@endif
@@ -106,6 +110,15 @@
                             @endif
                         </li>
                     @endforeach
+                    @if ($homeMore)
+                        <li>
+                            <button type="button" @click="all = !all"
+                                    class="flex w-full items-center justify-between px-4 py-2 font-semibold text-primary-100 hover:bg-primary-600 hover:text-white">
+                                <span x-text="all ? 'Thu gọn' : 'Xem thêm {{ $menuCategories->count() - $homeLimit }} danh mục'"></span>
+                                <x-icon name="chevron-down" class="h-4 w-4 transition" ::class="all && 'rotate-180'" />
+                            </button>
+                        </li>
+                    @endif
                 </ul>
             </div>
 
