@@ -17,12 +17,14 @@
     // Khi trượt: mỗi cột rộng đúng 1/8 (máy tính) hoặc 1/5 (điện thoại) khung nhìn, 2 hàng trượt cùng nhau.
     // Các lớp CSS viết đầy đủ để Tailwind nhận diện được.
     $fit = 'grid [grid-template-columns:repeat(var(--cols),minmax(0,1fr))]';
-    $slideBase = 'no-scrollbar grid overflow-x-auto snap-x snap-mandatory scroll-smooth [grid-template-columns:repeat(var(--cols),calc((100%-4px)/5))]';
+    $slideBase = 'no-scrollbar grid overflow-x-auto snap-x snap-mandatory scroll-smooth [grid-template-columns:repeat(var(--cols),calc(100%/5))]';
     $trackClass = match (true) {
-        $slideLg => $slideBase.' lg:[grid-template-columns:repeat(var(--cols),calc((100%-7px)/8))]',
+        $slideLg => $slideBase.' lg:[grid-template-columns:repeat(var(--cols),calc(100%/8))]',
         $slideSm => $slideBase.' lg:overflow-visible lg:snap-none lg:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]',
         default => $fit,
     };
+    // Đường kẻ lưới = viền phải + viền dưới của từng ô (rõ nét ở mọi mức phóng to màn hình);
+    // -mr-px -mb-px giấu viền thừa ở mép ngoài để không bị dày gấp đôi khung ngoài.
     // Số lẻ ô -> thêm 1 ô trống để 2 hàng thẳng đường kẻ.
     $fill = $count % 2;
 @endphp
@@ -33,9 +35,9 @@
     <h2 id="home-categories" class="sr-only">Danh mục sản phẩm</h2>
 
     <ul @if ($slideSm || $slideLg) x-ref="track" @scroll.debounce.50ms="onScroll()" @endif
-        class="gap-px bg-neutral-200 {{ $trackClass }}" style="--cols: {{ $cols }};">
+        class="-mr-px -mb-px {{ $trackClass }}" style="--cols: {{ $cols }};">
         @foreach ($gridCategories as $cat)
-            <li class="snap-start bg-white">
+            <li class="snap-start border-r border-b border-neutral-200 bg-white">
                 <a href="{{ $cat->url() }}"
                    class="group flex h-full flex-col items-center gap-2 px-1 pt-4 pb-3 text-center transition-colors hover:bg-primary-50 focus-visible:relative focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-primary-600 sm:px-2 lg:gap-3 lg:pt-5 lg:pb-4">
                     <span class="flex h-11 w-11 items-center justify-center transition-transform duration-200 group-hover:-translate-y-1 group-hover:scale-105 sm:h-14 sm:w-14 lg:h-16 lg:w-16">
@@ -52,7 +54,7 @@
             </li>
         @endforeach
         @if ($fill)
-            <li aria-hidden="true" class="bg-white"></li>
+            <li aria-hidden="true" class="border-r border-b border-neutral-200 bg-white"></li>
         @endif
     </ul>
 
