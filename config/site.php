@@ -15,7 +15,9 @@ return [
     'email' => env('SITE_EMAIL', ''),
     'address' => env('SITE_ADDRESS', ''),
     'parent_site' => env('SITE_PARENT_URL', 'https://trangthietbi.vn'),
-    'logo' => env('SITE_LOGO', '/images/logo.svg'),
+    'logo' => env('SITE_LOGO'), // ví dụ /images/logo.png (đặt file trong public/images)
+    'map_embed' => env('SITE_MAP_EMBED'), // link nhúng Google Maps cho trang Liên hệ
+    'working_hours' => env('SITE_WORKING_HOURS', 'Thứ 2 – Thứ 7: 8:00 – 17:30'),
 
     // Email nhận thông báo khi có yêu cầu báo giá mới (để trống = không gửi)
     'quote_notify_email' => env('QUOTE_NOTIFY_EMAIL'),

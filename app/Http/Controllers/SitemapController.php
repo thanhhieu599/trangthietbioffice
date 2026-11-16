@@ -17,7 +17,12 @@ class SitemapController extends Controller
                 ['loc' => route('home'), 'lastmod' => null],
                 ['loc' => route('quote.create'), 'lastmod' => null],
                 ['loc' => route('posts.index'), 'lastmod' => null],
+                ['loc' => route('brands.index'), 'lastmod' => null],
+                ['loc' => route('contact'), 'lastmod' => null],
             ]);
+
+            Product::active()->whereNotNull('brand')->where('brand', '!=', '')->distinct()->pluck('brand')
+                ->each(fn ($b) => $urls->push(['loc' => route('brands.show', \Illuminate\Support\Str::slug($b)), 'lastmod' => null]));
 
             Category::active()->get()->each(fn ($c) => $urls->push(['loc' => $c->url(), 'lastmod' => $c->updated_at]));
             Product::active()->get(['slug', 'updated_at'])->each(fn ($p) => $urls->push(['loc' => $p->url(), 'lastmod' => $p->updated_at]));

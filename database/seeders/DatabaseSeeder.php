@@ -2,83 +2,139 @@
 
 namespace Database\Seeders;
 
+use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
- * Dữ liệu khởi tạo: cây danh mục VPP B2B + vài sản phẩm, bài viết mẫu để xem giao diện.
+ * Dữ liệu khởi tạo: cây danh mục VPP + sản phẩm / banner / bài viết DEMO để xem giao diện.
  * Sản phẩm thật nhập bằng: php artisan products:import duong-dan-file.csv
+ * Xóa dữ liệu demo: php artisan migrate:fresh (rồi chỉ chạy CategorySeeder nếu cần).
  */
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $tree = [
-            'Giấy in' => ['Giấy A4', 'Giấy A3', 'Giấy in màu, giấy bìa'],
-            'Bút viết' => ['Bút bi', 'Bút dạ quang, bút lông', 'Bút chì, gôm'],
-            'File & lưu trữ hồ sơ' => ['Bìa còng, bìa hộp', 'Bìa lá, bìa nút', 'Kẹp, ghim, bấm kim'],
-            'Băng keo & đóng gói' => ['Băng keo trong, đục', 'Băng keo giấy, 2 mặt', 'Màng PE, dây đai'],
-            'Mực in' => ['Mực laser', 'Mực in phun'],
-            'Vệ sinh văn phòng' => ['Giấy vệ sinh, khăn giấy', 'Nước lau, hóa chất vệ sinh'],
-            'Thiết bị văn phòng nhỏ' => ['Máy tính cầm tay', 'Máy bấm, đục lỗ'],
+        $this->call(CategorySeeder::class);
+
+        if (app()->environment('production')) {
+            return; // Không đưa dữ liệu demo lên site thật.
+        }
+
+        $this->demoProducts();
+        $this->demoBanners();
+        $this->demoPosts();
+
+        Cache::forget('menu.categories');
+        Cache::forget('sitemap.xml');
+    }
+
+    private function demoProducts(): void
+    {
+        $demo = [
+            'giay-a4' => [
+                ['Giấy in A4 70gsm – ram 500 tờ', 'Double A', 'ram', 72000, 85000],
+                ['Giấy in A4 80gsm – ram 500 tờ', 'Double A', 'ram', 89000, 99000],
+                ['Giấy in A4 70gsm IK Plus – ram 500 tờ', 'IK Plus', 'ram', null, null],
+                ['Giấy in A4 Paper One 80gsm – ram 500 tờ', 'Paper One', 'ram', null, null],
+                ['Giấy in A4 Excel 70gsm – ram 500 tờ', 'Excel', 'ram', null, null],
+            ],
+            'giay-a3' => [
+                ['Giấy in A3 70gsm – ram 500 tờ', 'Double A', 'ram', null, null],
+                ['Giấy in A3 80gsm – ram 500 tờ', 'Paper One', 'ram', null, null],
+            ],
+            'but-bi' => [
+                ['Bút bi Thiên Long TL-027 mực xanh – hộp 20 cây', 'Thiên Long', 'hộp', null, null],
+                ['Bút bi Thiên Long TL-027 mực đỏ – hộp 20 cây', 'Thiên Long', 'hộp', null, null],
+                ['Bút bi bấm Deli 0.7mm mực xanh – hộp 12 cây', 'Deli', 'hộp', null, null],
+                ['Bút gel ký tên 0.5mm mực đen – hộp 12 cây', 'Deli', 'hộp', null, null],
+                ['Bút bi Bến Nghé B-36 – hộp 20 cây', 'Bến Nghé', 'hộp', null, null],
+            ],
+            'bia-cong-bia-hop' => [
+                ['Bìa còng bật 7cm khổ A4 – Kingjim', 'Kingjim', 'cái', null, null],
+                ['Bìa còng bật 5cm khổ F4 – Plus', 'Plus', 'cái', null, null],
+                ['Hộp đựng hồ sơ 10cm nhựa – Deli', 'Deli', 'cái', null, null],
+                ['Bìa còng nhẫn 3.5cm khổ A4', 'Deli', 'cái', null, null],
+            ],
+            'bia-la-bia-nut' => [
+                ['Bìa lá A4 nhựa trong – xấp 100 cái', 'Plus', 'xấp', null, null],
+                ['Bìa nút A4 nhựa – xấp 12 cái', 'Deli', 'xấp', null, null],
+                ['Bìa trình ký A4 có kẹp', 'Kingjim', 'cái', null, null],
+            ],
+            'but-long-dau' => [
+                ['Bút lông dầu Thiên Long PM-09 xanh – hộp 10 cây', 'Thiên Long', 'hộp', null, null],
+                ['Bút lông dầu 2 đầu Zebra Mckee đen', 'Zebra', 'cây', null, null],
+                ['Bút lông bảng Thiên Long WB-03 – hộp 10 cây', 'Thiên Long', 'hộp', null, null],
+            ],
+            'muc-bom-but-long' => [
+                ['Mực bơm bút lông bảng Thiên Long WBI-01 xanh', 'Thiên Long', 'chai', null, null],
+                ['Mực bơm bút lông dầu Thiên Long PMI-01 đen', 'Thiên Long', 'chai', null, null],
+            ],
+            'bang-keo-trong-duc' => [
+                ['Băng keo trong 48mm x 100 yard – cây 6 cuộn', null, 'cây', 96000, 120000],
+                ['Băng keo đục 48mm x 100 yard – cây 6 cuộn', null, 'cây', null, null],
+                ['Băng keo trong 24mm x 50 yard – cây 12 cuộn', null, 'cây', null, null],
+            ],
+            'bang-keo-giay-2-mat' => [
+                ['Băng keo giấy 24mm x 20 yard', null, 'cuộn', null, null],
+                ['Băng keo 2 mặt mỏng 24mm', null, 'cuộn', null, null],
+            ],
         ];
 
-        $order = 0;
-        foreach ($tree as $root => $children) {
-            $parent = Category::updateOrCreate(['slug' => Str::slug($root)], [
-                'name' => $root,
-                'intro' => "Cung cấp {$this->lower($root)} cho văn phòng, nhà máy: báo giá theo số lượng, giao định kỳ, hóa đơn VAT.",
-                'sort_order' => $order++,
-            ]);
-            foreach ($children as $i => $child) {
-                Category::updateOrCreate(['slug' => Str::slug($child)], [
-                    'name' => $child,
-                    'parent_id' => $parent->id,
-                    'sort_order' => $i,
+        $i = 0;
+        foreach ($demo as $slug => $items) {
+            $category = Category::where('slug', $slug)->first();
+            foreach ($items as [$name, $brand, $unit, $price, $compare]) {
+                $sku = 'DEMO-'.str_pad((string) ++$i, 3, '0', STR_PAD_LEFT);
+                Product::updateOrCreate(['sku' => $sku], [
+                    'category_id' => $category?->id,
+                    'name' => $name,
+                    'slug' => Str::slug($name),
+                    'brand' => $brand,
+                    'unit' => $unit,
+                    'price' => $price,
+                    'compare_price' => $compare,
+                    'short_description' => "{$name}. Báo giá sỉ theo số lượng cho doanh nghiệp, giao định kỳ, hóa đơn VAT.",
+                    'is_featured' => $i % 4 === 1,
                 ]);
             }
         }
+    }
 
-        $a4 = Category::where('slug', 'giay-a4')->first();
-        $pen = Category::where('slug', 'but-bi')->first();
-        $tape = Category::where('slug', 'bang-keo-trong-duc')->first();
-
-        $samples = [
-            [$a4, 'VPP-GA4-70', 'Giấy in A4 70gsm – ram 500 tờ', 'ram', '5 ram/thùng', ['Khổ' => 'A4 (210 x 297 mm)', 'Định lượng' => '70gsm', 'Số tờ' => '500 tờ/ram']],
-            [$a4, 'VPP-GA4-80', 'Giấy in A4 80gsm – ram 500 tờ', 'ram', '5 ram/thùng', ['Khổ' => 'A4 (210 x 297 mm)', 'Định lượng' => '80gsm', 'Số tờ' => '500 tờ/ram']],
-            [$pen, 'VPP-BB-XANH', 'Bút bi mực xanh ngòi 0.5mm – hộp 20 cây', 'hộp', '20 cây/hộp', ['Màu mực' => 'Xanh', 'Ngòi' => '0.5mm']],
-            [$tape, 'VPP-BK-TRONG-48', 'Băng keo trong 48mm x 100 yard', 'cuộn', '6 cuộn/cây', ['Bản rộng' => '48mm', 'Chiều dài' => '100 yard']],
-        ];
-
-        foreach ($samples as [$cat, $sku, $name, $unit, $pack, $specs]) {
-            Product::updateOrCreate(['sku' => $sku], [
-                'category_id' => $cat->id,
-                'name' => $name,
-                'slug' => Str::slug($name),
-                'unit' => $unit,
-                'pack_size' => $pack,
-                'specs' => $specs,
-                'short_description' => "{$name}, quy cách {$pack}. Báo giá sỉ theo số lượng cho doanh nghiệp.",
-                'is_featured' => true,
-            ]);
-        }
-
-        Post::updateOrCreate(['slug' => 'dinh-muc-van-phong-pham-theo-dau-nguoi'], [
-            'title' => 'Định mức văn phòng phẩm theo đầu người: cách lập và kiểm soát chi phí',
-            'excerpt' => 'Cách xây định mức VPP theo phòng ban, theo đầu người và theo tháng để kiểm soát ngân sách mua sắm.',
-            'content' => '<p>Bài viết mẫu. Thay nội dung thật trong trang quản trị hoặc seeder.</p>',
-            'faqs' => [
-                ['q' => 'Nên đặt VPP theo tháng hay theo quý?', 'a' => 'Hàng tiêu hao nhanh (giấy, bút) nên giao hàng tháng; hàng chậm luân chuyển (file, thiết bị nhỏ) có thể gom theo quý.'],
-            ],
-            'published_at' => now(),
+    private function demoBanners(): void
+    {
+        Banner::updateOrCreate(['image' => '/images/banners/demo-1.svg'], [
+            'title' => 'Văn phòng phẩm cho doanh nghiệp – báo giá trong 4 giờ',
+            'link' => '/bao-gia',
+            'sort_order' => 1,
+        ]);
+        Banner::updateOrCreate(['image' => '/images/banners/demo-2.svg'], [
+            'title' => 'Giao định kỳ hàng tháng – công nợ & hóa đơn VAT',
+            'link' => '/lien-he',
+            'sort_order' => 2,
         ]);
     }
 
-    private function lower(string $s): string
+    private function demoPosts(): void
     {
-        return mb_strtolower($s);
+        $posts = [
+            ['dinh-muc-van-phong-pham-theo-dau-nguoi', 'Định mức văn phòng phẩm theo đầu người: cách lập và kiểm soát chi phí'],
+            ['chon-giay-in-70gsm-hay-80gsm', 'Giấy in 70gsm hay 80gsm: chọn loại nào cho văn phòng?'],
+            ['quy-trinh-mua-vpp-dinh-ky-cho-nha-may', 'Quy trình mua văn phòng phẩm định kỳ cho nhà máy'],
+            ['cach-luu-tru-ho-so-iso', 'Cách sắp xếp, lưu trữ hồ sơ ISO với bìa còng và hộp hồ sơ'],
+        ];
+        foreach ($posts as $k => [$slug, $title]) {
+            Post::updateOrCreate(['slug' => $slug], [
+                'title' => $title,
+                'excerpt' => 'Bài viết mẫu – thay bằng nội dung thật.',
+                'content' => '<p>Bài viết mẫu. Thay nội dung thật trong trang quản trị.</p>',
+                'faqs' => $k === 0 ? [['q' => 'Nên đặt VPP theo tháng hay theo quý?', 'a' => 'Hàng tiêu hao nhanh (giấy, bút) nên giao hàng tháng; hàng chậm luân chuyển có thể gom theo quý.']] : null,
+                'published_at' => now()->subDays($k),
+            ]);
+        }
     }
 }

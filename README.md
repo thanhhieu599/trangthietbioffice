@@ -5,6 +5,29 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 
 **Công nghệ:** Laravel 13 · Blade (dựng HTML phía máy chủ, tốt cho SEO) · Tailwind CSS 4 · Alpine.js · Vite.
 
+## Giao diện
+
+- **Màu thương hiệu:** đỏ – đen – trắng, khai báo một chỗ trong `resources/css/app.css` (biến `--color-primary-*`, `--color-ink-*`).
+- **Header:** logo · ô tìm kiếm · hotline · giỏ báo giá. Thanh menu chính màu đỏ: Trang chủ, Tin tức, Thương hiệu, Liên hệ.
+- **Danh mục sản phẩm:** nút đen bên trái thanh menu đỏ, sổ xuống danh mục cấp 1, rê chuột hiện danh mục con. Ở trang chủ menu luôn mở bên trái banner; trên điện thoại là ngăn kéo trượt.
+- **Banner trang chủ:** trình chiếu ảnh tự chuyển 5 giây, có nút trái/phải và chấm chuyển ảnh.
+- **Trang chủ chia khối theo danh mục:** mỗi danh mục bật `show_on_home` là một khối (tiêu đề in hoa + 10 sản phẩm + "Xem tất cả").
+- **Thẻ sản phẩm:** ảnh · tên (2 dòng) · giá gốc gạch ngang + % giảm · giá đỏ · nút "Báo giá". Một lớp viền, không lồng khung.
+
+### Thay banner
+
+Đặt ảnh vào `public/images/banners/` (khuyến nghị **1170 × 500 px**, ảnh riêng cho điện thoại 800 × 450 px nếu muốn; đặt chữ và sản phẩm chính ở giữa ảnh vì màn hình hẹp sẽ cắt bớt hai bên), sau đó thêm dòng vào bảng `banners`:
+
+```bash
+php artisan tinker --execute="App\Models\Banner::create(['title' => 'Khuyến mãi tháng 11', 'image' => '/images/banners/thang-11.jpg', 'link' => '/bao-gia', 'sort_order' => 1]);"
+```
+
+Tắt banner demo: `App\Models\Banner::where('image', 'like', '%demo-%')->delete();` (sẽ có trang quản trị ở giai đoạn sau).
+
+### Chọn danh mục hiện trên trang chủ
+
+Sửa cột `show_on_home` (1 = hiện) và `sort_order` (thứ tự khối) trong bảng `categories`, hoặc sửa mảng trong `database/seeders/CategorySeeder.php`.
+
 ## Đã có trong giai đoạn 1
 
 | Phần | Mô tả |
@@ -13,7 +36,9 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 | Trang sản phẩm | `/san-pham/{slug}` – ảnh, thông số, quy cách, giá hoặc "Liên hệ báo giá" |
 | Danh sách báo giá | Khách thêm nhiều mã (lưu ở trình duyệt), gửi 1 yêu cầu tại `/bao-gia` |
 | Lưu RFQ | Bảng `quote_requests` + `quote_request_items`, email thông báo cho sales, chống spam (ô bẫy + giới hạn 5 lần/phút) |
-| Bài viết kiến thức | `/kien-thuc/{slug}` – kèm mục Hỏi đáp (FAQ) |
+| Tin tức | `/tin-tuc/{slug}` – kèm mục Hỏi đáp (FAQ). Link cũ `/kien-thuc` tự chuyển 301 |
+| Thương hiệu | `/thuong-hieu` và `/thuong-hieu/{slug}` – tự lấy từ cột `brand` của sản phẩm |
+| Liên hệ | `/lien-he` – thông tin công ty, bản đồ (biến `SITE_MAP_EMBED`), form gửi yêu cầu |
 | SEO kỹ thuật | Title/description riêng từng trang, canonical, Open Graph, `sitemap.xml` tự động, `robots.txt` (chặn index khi chưa ở production) |
 | Dữ liệu có cấu trúc | JSON-LD: Organization, Product, BreadcrumbList, Article, FAQPage |
 | Hiệu năng | Font tự lưu (không gọi Google Fonts), ảnh lazy-load, CSS ~6,5 KB gzip |
@@ -51,7 +76,8 @@ php artisan products:import duong-dan/san-pham.csv
 | `name` | ✔ | Loại sp + thương hiệu + quy cách |
 | `category` | | Dạng `Giấy in > Giấy A4`, tự tạo danh mục nếu chưa có |
 | `brand`, `unit`, `pack_size` | | Thương hiệu, đơn vị tính, quy cách đóng gói |
-| `price` | | Để trống = "Liên hệ báo giá" |
+| `price` | | Giá bán. Để trống = "Liên hệ" |
+| `compare_price` | | Giá gốc. Lớn hơn `price` thì hiện giá gạch ngang và % giảm |
 | `min_order_qty` | | Số lượng đặt tối thiểu |
 | `short_description`, `description` | | Mô tả ngắn (chữ) / mô tả chi tiết (cho phép HTML) |
 | `specs` | | `Khổ: A4 \| Định lượng: 80gsm` |
@@ -73,7 +99,8 @@ Hosting cần: PHP 8.3+, MySQL/MariaDB, Composer, nên có SSH. Hỏi nhà cung 
 ```bash
 composer install --no-dev --optimize-autoloader
 php artisan key:generate
-php artisan migrate --seed --force
+php artisan migrate --force
+php artisan db:seed --class=CategorySeeder --force   # chỉ tạo cây danh mục, không có dữ liệu demo
 php artisan storage:link
 php artisan config:cache
 php artisan route:cache

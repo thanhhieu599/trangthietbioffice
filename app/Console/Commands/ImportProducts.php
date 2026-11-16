@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  * Khóa đối chiếu là cột "sku": mã đã có thì cập nhật, chưa có thì thêm mới.
  *
  * Cột hỗ trợ (dòng đầu là tiêu đề, xem docs/mau-nhap-san-pham.csv):
- *   sku*, name*, category (dạng "Giấy in > Giấy A4"), brand, unit, pack_size, price,
+ *   sku*, name*, category (dạng "Giấy in > Giấy A4"), brand, unit, pack_size, price, compare_price,
  *   min_order_qty, short_description, description, specs ("Khổ: A4 | Định lượng: 80gsm"),
  *   images (ngăn bằng dấu phẩy hoặc "|"), is_featured (1/0), is_active (1/0),
  *   meta_title, meta_description
@@ -89,6 +89,7 @@ class ImportProducts extends Command
         fclose($handle);
 
         Cache::forget('sitemap.xml');
+        Cache::forget('menu.categories');
 
         $this->info(($dry ? '[Chạy thử] ' : '')."Thêm mới: {$created} · Cập nhật: {$updated} · Bỏ qua: {$skipped}");
 
@@ -107,9 +108,11 @@ class ImportProducts extends Command
             }
         }
 
-        if (array_key_exists('price', $d)) {
-            $digits = preg_replace('/\D/', '', $d['price']);
-            $attrs['price'] = $digits !== '' && (int) $digits > 0 ? (int) $digits : null;
+        foreach (['price', 'compare_price'] as $col) {
+            if (array_key_exists($col, $d)) {
+                $digits = preg_replace('/\D/', '', $d[$col]);
+                $attrs[$col] = $digits !== '' && (int) $digits > 0 ? (int) $digits : null;
+            }
         }
         if (array_key_exists('min_order_qty', $d)) {
             $attrs['min_order_qty'] = max(1, (int) $d['min_order_qty']);

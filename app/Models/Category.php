@@ -12,10 +12,10 @@ class Category extends Model
 {
     protected $fillable = [
         'parent_id', 'name', 'slug', 'intro', 'content', 'image',
-        'meta_title', 'meta_description', 'sort_order', 'is_active',
+        'meta_title', 'meta_description', 'sort_order', 'is_active', 'show_on_home',
     ];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = ['is_active' => 'boolean', 'show_on_home' => 'boolean'];
 
     public function parent(): BelongsTo
     {

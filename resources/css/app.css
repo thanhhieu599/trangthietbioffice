@@ -8,26 +8,40 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * Bảng màu thương hiệu: ĐỎ – ĐEN – TRẮNG (đồng bộ trangthietbi.vn).
+ * Muốn đổi tông đỏ, chỉ sửa các biến --color-primary-* bên dưới.
+ */
 @theme {
     --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
-    --color-brand-50: #eff6ff;
-    --color-brand-100: #dbeafe;
-    --color-brand-600: #1d4ed8;
-    --color-brand-700: #1e40af;
-    --color-brand-900: #172554;
-    --color-accent-500: #f59e0b;
-    --color-accent-600: #d97706;
+
+    --color-primary-50: #fef2f2;
+    --color-primary-100: #fde4e4;
+    --color-primary-600: #d71920;
+    --color-primary-700: #b5141a;
+    --color-primary-800: #8e1014;
+
+    --color-ink-700: #333333;
+    --color-ink-800: #222222;
+    --color-ink-900: #141414;
+
+    --container-site: 1240px;
 }
 
 [x-cloak] { display: none !important; }
 
-/* Nội dung bài viết / mô tả dài (nhập từ trang quản trị dạng HTML) */
-.prose-content h2 { @apply mt-8 mb-3 text-xl font-semibold text-slate-900; }
-.prose-content h3 { @apply mt-6 mb-2 text-lg font-semibold text-slate-900; }
+/* Ẩn thanh cuộn ngang của menu trên điện thoại */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Nội dung bài viết / mô tả dài (nhập dạng HTML) */
+.prose-content h2 { @apply mt-8 mb-3 text-xl font-semibold text-ink-900; }
+.prose-content h3 { @apply mt-6 mb-2 text-lg font-semibold text-ink-900; }
 .prose-content p { @apply mb-4 leading-relaxed; }
 .prose-content ul { @apply mb-4 list-disc pl-6 space-y-1; }
 .prose-content ol { @apply mb-4 list-decimal pl-6 space-y-1; }
-.prose-content a { @apply text-brand-600 underline; }
+.prose-content a { @apply text-primary-600 underline; }
+.prose-content img { @apply my-4 h-auto max-w-full rounded; }
 .prose-content table { @apply mb-4 w-full border-collapse text-sm; }
-.prose-content th, .prose-content td { @apply border border-slate-200 px-3 py-2 text-left; }
-.prose-content th { @apply bg-slate-50 font-semibold; }
+.prose-content th, .prose-content td { @apply border border-neutral-200 px-3 py-2 text-left; }
+.prose-content th { @apply bg-neutral-50 font-semibold; }

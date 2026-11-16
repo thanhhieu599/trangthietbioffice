@@ -45,7 +45,7 @@
         </script>
     @endif
 </head>
-<body class="flex min-h-screen flex-col bg-slate-50 font-sans text-slate-700 antialiased">
+<body class="flex min-h-screen flex-col bg-neutral-100 font-sans text-ink-700 antialiased">
     @include('partials.header')
 
     <main class="flex-1">

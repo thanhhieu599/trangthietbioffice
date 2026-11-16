@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1170" height="500" viewBox="0 0 1170 500">
+  <rect width="1170" height="500" fill="#141414"/>
+  <rect x="760" y="0" width="410" height="500" fill="#d71920"/>
+  <polygon points="700,0 760,0 760,500 630,500" fill="#d71920"/>
+  <text x="90" y="135" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#999" letter-spacing="4">BANNER DEMO – THAY ẢNH 1170 x 500</text>
+  <text x="90" y="225" font-family="Arial, sans-serif" font-size="56" font-weight="800" fill="#fff">GIAO ĐỊNH KỲ</text>
+  <text x="90" y="292" font-family="Arial, sans-serif" font-size="56" font-weight="800" fill="#d71920">HÀNG THÁNG</text>
+  <text x="90" y="355" font-family="Arial, sans-serif" font-size="26" fill="#ddd">Công nợ theo hợp đồng – Hóa đơn VAT đầy đủ</text>
+  <text x="965" y="262" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="800" fill="#fff">D&amp;T OFFICE</text>
+</svg>

@@ -1,22 +1,36 @@
-<article class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:shadow-md">
-    <a href="{{ $product->url() }}" class="block aspect-square bg-slate-100">
+{{-- Thẻ sản phẩm: chỉ 1 lớp viền, không lồng khung – theo bố cục ảnh / tên / giá / thao tác --}}
+<article class="group flex flex-col rounded-lg border border-neutral-200 bg-white p-3 transition hover:border-primary-600 hover:shadow-md">
+    <a href="{{ $product->url() }}" class="block aspect-square">
         @if ($product->mainImage())
             <img src="{{ $product->mainImage() }}" alt="{{ $product->name }}" loading="lazy" decoding="async"
-                 width="400" height="400" class="h-full w-full object-contain p-3">
+                 width="300" height="300" class="h-full w-full object-contain transition group-hover:scale-[1.03]">
         @else
-            <div class="flex h-full items-center justify-center text-xs text-slate-400">Chưa có ảnh</div>
+            <span class="flex h-full w-full items-center justify-center bg-neutral-50 text-neutral-300">
+                <x-icon name="image" class="h-12 w-12" />
+            </span>
         @endif
     </a>
-    <div class="flex flex-1 flex-col p-3">
-        <p class="text-xs text-slate-500">{{ $product->sku }}@if ($product->brand) · {{ $product->brand }}@endif</p>
-        <h3 class="mt-1 line-clamp-2 text-sm font-medium text-slate-900">
-            <a href="{{ $product->url() }}" class="hover:text-brand-600">{{ $product->name }}</a>
-        </h3>
-        <p class="mt-auto pt-2 text-sm font-semibold text-brand-700">{{ $product->formattedPrice() }}</p>
-        <button type="button" class="mt-2 rounded-lg border border-brand-600 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50"
-                x-data @click="$store.quote.add(@js($product->sku), {{ $product->min_order_qty }})"
-                x-text="$store.quote.has(@js($product->sku)) ? '✓ Đã thêm – thêm nữa' : '+ Thêm vào báo giá'">
-            + Thêm vào báo giá
+
+    <h3 class="mt-3 line-clamp-2 min-h-[2.75rem] text-[14px] leading-snug text-ink-800">
+        <a href="{{ $product->url() }}" class="hover:text-primary-600">{{ $product->name }}</a>
+    </h3>
+
+    <div class="mt-2 flex min-h-5 items-center gap-2 text-[13px]">
+        @if ($product->hasDiscount())
+            <span class="text-neutral-400 line-through">{{ \App\Models\Product::money($product->compare_price) }}</span>
+            <span class="rounded bg-primary-50 px-1.5 py-0.5 font-medium text-primary-600">-{{ $product->discountPercent() }}%</span>
+        @endif
+    </div>
+    <p class="text-lg font-bold text-primary-600">{{ $product->formattedPrice() }}</p>
+
+    <div class="mt-auto flex items-center justify-between pt-2 text-[13px]">
+        <span class="hidden text-neutral-500 sm:inline">{{ $product->unit ? 'ĐVT: '.$product->unit : '' }}</span>
+        <button type="button" x-data class="ml-auto flex items-center gap-1 font-medium text-primary-600 hover:text-primary-700"
+                @click="$store.quote.add(@js($product->sku), {{ $product->min_order_qty }})"
+                aria-label="Thêm {{ $product->name }} vào báo giá">
+            <span x-show="!$store.quote.has(@js($product->sku))"><x-icon name="plus-circle" class="h-4 w-4" /></span>
+            <span x-show="$store.quote.has(@js($product->sku))" x-cloak><x-icon name="check-circle" class="h-4 w-4" /></span>
+            <span x-text="$store.quote.has(@js($product->sku)) ? 'Đã thêm' : 'Báo giá'">Báo giá</span>
         </button>
     </div>
 </article>
