@@ -21,25 +21,8 @@
 </section>
 
 <div class="mx-auto max-w-site space-y-8 px-4 py-8">
-    {{-- ===== Thương hiệu ===== --}}
-    @if ($brands->isNotEmpty())
-        <section aria-labelledby="home-brands">
-            <div class="mb-4 flex items-end justify-between border-b-2 border-primary-600">
-                <h2 id="home-brands" class="bg-primary-600 px-4 py-2 text-[15px] font-bold uppercase text-white">Thương hiệu phân phối</h2>
-                <a href="{{ route('brands.index') }}" class="pb-2 text-sm text-neutral-600 hover:text-primary-600">Xem tất cả ›</a>
-            </div>
-            <ul class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-                @foreach ($brands as $brand)
-                    <li>
-                        <a href="{{ route('brands.show', $brand['slug']) }}"
-                           class="flex h-16 items-center justify-center rounded-md border border-neutral-200 bg-white px-3 text-center font-bold uppercase tracking-wide text-ink-800 hover:border-primary-600 hover:text-primary-600">
-                            {{ $brand['name'] }}
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </section>
-    @endif
+    {{-- ===== Thương hiệu: 2 hàng thẻ logo, tự trượt khi nhiều ===== --}}
+    @include('partials.brand-carousel')
 
     {{-- ===== Tin tức mới (cuối trang, ngay trên footer) ===== --}}
     @include('partials.news-carousel')

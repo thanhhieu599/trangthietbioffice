@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
  *   public/images/logo-footer.png   -> logo trong khối giới thiệu ở footer (trangthietbi.vn)
  *   public/images/banners/*.jpg     -> ảnh banner trang chủ (xếp theo tên file: 01-..., 02-...)
  *   public/images/categories/{slug}.png -> ảnh/biểu tượng danh mục ở lưới danh mục trang chủ
+ *   public/images/brands/{slug}.png     -> logo thương hiệu (khối Thương hiệu, trang Thương hiệu)
  *
  * Đuôi file chấp nhận: svg, png, webp, jpg, jpeg.
  */
@@ -39,6 +40,12 @@ class SiteImage
     public static function category(string $slug): ?string
     {
         return self::find('categories/'.$slug, ['png', 'webp', 'jpg', 'jpeg', 'svg']);
+    }
+
+    /** Logo thương hiệu: public/images/brands/{slug}.png (hoặc .webp/.jpg/.svg), ví dụ thien-long.png. */
+    public static function brand(string $slug): ?string
+    {
+        return self::find('brands/'.$slug, ['png', 'webp', 'jpg', 'jpeg', 'svg']);
     }
 
     /** Logo header: file public/images/logo.* hoặc biến SITE_LOGO. */

@@ -12,6 +12,7 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 - **Danh mục sản phẩm:** nút đen bên trái thanh menu đỏ, sổ xuống danh mục cấp 1, rê chuột hiện danh mục con. Ở trang chủ menu luôn mở bên trái banner; trên điện thoại là ngăn kéo trượt.
 - **Banner trang chủ:** trình chiếu ảnh tự chuyển 5 giây, có nút trái/phải và chấm chuyển ảnh.
 - **Lưới danh mục dạng biểu tượng** giữa banner và các khối sản phẩm: luôn **2 hàng**, mỗi ô gồm ảnh và tên danh mục cấp 1. Vừa 2 hàng (máy tính tối đa 16 ô, điện thoại tối đa 10 ô) thì đứng yên; nhiều hơn thì tự trượt mỗi 4 giây (dừng khi rê chuột / chạm) và có nút trái / phải. Hàng trên là nửa đầu danh sách, hàng dưới là nửa sau. Đã có sẵn biểu tượng mặc định (`.svg`); chép ảnh `.png` cùng tên vào là ảnh mới được ưu tiên.
+- **Thương hiệu** (cuối trang chủ): thẻ logo lớn + tên, luôn **2 hàng**. Vừa 2 hàng (máy tính tối đa 12, điện thoại tối đa 6) thì đứng yên; nhiều hơn thì tự trượt mỗi 4 giây và có nút trái / phải. Thương hiệu tự lấy từ cột `brand` của sản phẩm; chưa có logo thì hiện tên dạng chữ lớn.
 - **Trang chủ chia khối theo danh mục:** mỗi danh mục bật `show_on_home` là một khối chỉ **1 hàng** (5 sản phẩm trên máy tính, 2 trên điện thoại). Có tối đa 15 sản phẩm, trượt qua lại bằng nút hai bên hoặc vuốt; cuối hàng có ô "Xem thêm N sản phẩm".
 - **Thẻ sản phẩm:** ảnh · tên (2 dòng) · giá gốc gạch ngang + % giảm · giá đỏ · nút "Báo giá". Một lớp viền, không lồng khung.
 
@@ -22,6 +23,7 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 | Logo header (D&T Office) | `public/images/logo.png` | Cao 120 px, nền trong suốt (PNG/SVG) |
 | Logo khối giới thiệu ở footer (trangthietbi.vn) | `public/images/logo-footer.png` | Rộng 500 px, nền trong suốt |
 | Banner trang chủ | `public/images/banners/` (mỗi ảnh 1 file) | **1170 × 500 px** |
+| Logo thương hiệu (khối Thương hiệu, trang /thuong-hieu) | `public/images/brands/{đường-dẫn-thương-hiệu}.png`, ví dụ `thien-long.png`, `double-a.png` | Ngang khoảng 300 × 120 px, nền trong suốt |
 | Ảnh từng danh mục ở lưới danh mục trang chủ | `public/images/categories/{đường-dẫn-danh-mục}.png`, ví dụ `bia-ho-so.png` | Vuông 256 × 256 px, nền trong suốt |
 
 - Đuôi file chấp nhận: `.png`, `.svg`, `.webp`, `.jpg`. Chưa có file thì hiện logo dạng chữ như hiện tại.

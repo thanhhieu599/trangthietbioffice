@@ -42,7 +42,7 @@ class CatalogController extends Controller
             'gridCategories' => Category::active()->roots()->get(),
             'sections' => $sections,
             'posts' => Post::published()->latest('published_at')->take(12)->get(),
-            'brands' => $this->brandList()->take(12),
+            'brands' => $this->brandList()->take(40),
         ]);
     }
 
