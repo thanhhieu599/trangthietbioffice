@@ -1,5 +1,5 @@
 {{-- Thẻ sản phẩm: chỉ 1 lớp viền, không lồng khung – theo bố cục ảnh / tên / giá / thao tác --}}
-<article class="group flex flex-col rounded-lg border border-neutral-200 bg-white p-3 transition hover:border-primary-600 hover:shadow-md">
+<article class="group flex h-full flex-col rounded-lg border border-neutral-200 bg-white p-3 transition hover:border-primary-600 hover:shadow-md">
     <a href="{{ $product->url() }}" class="block aspect-square">
         @if ($product->mainImage())
             <img src="{{ $product->mainImage() }}" alt="{{ $product->name }}" loading="lazy" decoding="async"

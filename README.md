@@ -11,18 +11,22 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 - **Header:** logo · ô tìm kiếm · hotline · giỏ báo giá. Thanh menu chính màu đỏ: Trang chủ, Tin tức, Thương hiệu, Liên hệ.
 - **Danh mục sản phẩm:** nút đen bên trái thanh menu đỏ, sổ xuống danh mục cấp 1, rê chuột hiện danh mục con. Ở trang chủ menu luôn mở bên trái banner; trên điện thoại là ngăn kéo trượt.
 - **Banner trang chủ:** trình chiếu ảnh tự chuyển 5 giây, có nút trái/phải và chấm chuyển ảnh.
-- **Trang chủ chia khối theo danh mục:** mỗi danh mục bật `show_on_home` là một khối (tiêu đề in hoa + 10 sản phẩm + "Xem tất cả").
+- **Trang chủ chia khối theo danh mục:** mỗi danh mục bật `show_on_home` là một khối chỉ **1 hàng** (5 sản phẩm trên máy tính, 2 trên điện thoại). Có tối đa 15 sản phẩm, trượt qua lại bằng nút hai bên hoặc vuốt; cuối hàng có ô "Xem thêm N sản phẩm".
 - **Thẻ sản phẩm:** ảnh · tên (2 dòng) · giá gốc gạch ngang + % giảm · giá đỏ · nút "Báo giá". Một lớp viền, không lồng khung.
 
-### Thay banner
+### Chèn logo và banner (chép file vào là hiện, không cần sửa code)
 
-Đặt ảnh vào `public/images/banners/` (khuyến nghị **1170 × 500 px**, ảnh riêng cho điện thoại 800 × 450 px nếu muốn; đặt chữ và sản phẩm chính ở giữa ảnh vì màn hình hẹp sẽ cắt bớt hai bên), sau đó thêm dòng vào bảng `banners`:
+| Vị trí | Đặt file vào | Kích thước khuyến nghị |
+|---|---|---|
+| Logo header (D&T Office) | `public/images/logo.png` | Cao 120 px, nền trong suốt (PNG/SVG) |
+| Logo khối giới thiệu ở footer (trangthietbi.vn) | `public/images/logo-footer.png` | Rộng 500 px, nền trong suốt |
+| Banner trang chủ | `public/images/banners/` (mỗi ảnh 1 file) | **1170 × 500 px** |
 
-```bash
-php artisan tinker --execute="App\Models\Banner::create(['title' => 'Khuyến mãi tháng 11', 'image' => '/images/banners/thang-11.jpg', 'link' => '/bao-gia', 'sort_order' => 1]);"
-```
-
-Tắt banner demo: `App\Models\Banner::where('image', 'like', '%demo-%')->delete();` (sẽ có trang quản trị ở giai đoạn sau).
+- Đuôi file chấp nhận: `.png`, `.svg`, `.webp`, `.jpg`. Chưa có file thì hiện logo dạng chữ như hiện tại.
+- Banner xếp theo tên file: đặt tên `01-khuyen-mai.jpg`, `02-giao-dinh-ky.jpg`… Muốn ảnh riêng cho điện thoại (800 × 450 px) thì thêm file cùng tên có đuôi `-mobile`, ví dụ `01-khuyen-mai-mobile.jpg`.
+- Xóa 2 file `demo-1.svg`, `demo-2.svg` trong thư mục banners khi đã có ảnh thật.
+- Đặt chữ và sản phẩm chính ở giữa ảnh banner vì màn hình hẹp sẽ cắt bớt hai bên.
+- Banner nhập trong bảng `banners` (có link riêng cho từng ảnh) được ưu tiên hơn ảnh trong thư mục; bảng trống thì dùng ảnh trong thư mục, bấm vào dẫn tới trang Yêu cầu báo giá.
 
 ### Footer & thông tin doanh nghiệp
 
@@ -31,7 +35,6 @@ Footer nền đỏ chữ trắng gồm khối giới thiệu D&T và 4 cột: Li
 
 - **Trang chính sách** (bảng `pages`, đường dẫn `/trang/{slug}`): nội dung để trống thì trang hiện "đang cập nhật" và gắn `noindex`. Có nội dung mới được đưa vào sitemap.
 - **Logo "Đã thông báo Bộ Công Thương"** chỉ hiện khi điền `SITE_BCT_URL` (link hồ sơ trên online.gov.vn của chính tên miền này).
-- **Logo trangthietbi.vn** ở khối giới thiệu: đặt ảnh vào `public/images/` và điền `SITE_PARENT_LOGO`; để trống thì hiện logo dạng chữ.
 
 ### Tin tức mới
 

@@ -6,6 +6,7 @@ use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Product;
+use App\Support\SiteImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -13,8 +14,8 @@ use Illuminate\View\View;
 
 class CatalogController extends Controller
 {
-    /** Số sản phẩm mỗi khối danh mục trên trang chủ (2 hàng x 5 cột). */
-    private const HOME_SECTION_SIZE = 10;
+    /** Số sản phẩm tối đa mỗi khối trên trang chủ (1 hàng, trượt ngang: 3 trang x 5 sản phẩm). */
+    private const HOME_SECTION_SIZE = 15;
 
     public function home(): View
     {
@@ -24,24 +25,37 @@ class CatalogController extends Controller
             ->orderBy('sort_order')
             ->with('children')
             ->get()
-            ->map(fn (Category $category) => [
-                'category' => $category,
-                'products' => Product::active()
-                    ->whereIn('category_id', $category->descendantIds())
-                    ->orderByDesc('is_featured')
-                    ->latest('id')
-                    ->take(self::HOME_SECTION_SIZE)
-                    ->get(),
-            ])
+            ->map(function (Category $category) {
+                $query = Product::active()->whereIn('category_id', $category->descendantIds());
+
+                return [
+                    'category' => $category,
+                    'total' => (clone $query)->count(),
+                    'products' => $query->orderByDesc('is_featured')->latest('id')->take(self::HOME_SECTION_SIZE)->get(),
+                ];
+            })
             ->filter(fn ($s) => $s['products']->isNotEmpty())
             ->values();
 
         return view('pages.home', [
-            'banners' => Banner::active()->get(),
+            'banners' => $this->banners(),
             'sections' => $sections,
             'posts' => Post::published()->latest('published_at')->take(12)->get(),
             'brands' => $this->brandList()->take(12),
         ]);
+    }
+
+    /**
+     * Banner trong database (có link riêng) được ưu tiên; nếu chưa có thì tự lấy
+     * ảnh trong thư mục public/images/banners (bỏ file vào là hiện).
+     */
+    private function banners(): Collection
+    {
+        $banners = Banner::active()->get();
+
+        return $banners->isNotEmpty()
+            ? $banners
+            : SiteImage::banners()->map(fn (array $b) => new Banner($b + ['link' => route('quote.create')]));
     }
 
     public function category(Request $request, Category $category): View

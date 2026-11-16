@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Product;
@@ -26,7 +25,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->demoProducts();
-        $this->demoBanners();
         $this->demoPosts();
 
         Cache::forget('menu.categories');
@@ -103,20 +101,6 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
-    }
-
-    private function demoBanners(): void
-    {
-        Banner::updateOrCreate(['image' => '/images/banners/demo-1.svg'], [
-            'title' => 'Văn phòng phẩm cho doanh nghiệp – báo giá trong 4 giờ',
-            'link' => '/bao-gia',
-            'sort_order' => 1,
-        ]);
-        Banner::updateOrCreate(['image' => '/images/banners/demo-2.svg'], [
-            'title' => 'Giao định kỳ hàng tháng – công nợ & hóa đơn VAT',
-            'link' => '/lien-he',
-            'sort_order' => 2,
-        ]);
     }
 
     private function demoPosts(): void

@@ -19,8 +19,9 @@
             </button>
 
             <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2" aria-label="{{ config('site.brand') }} – Trang chủ">
-                @if (config('site.logo'))
-                    <img src="{{ config('site.logo') }}" alt="{{ config('site.brand') }}" class="h-10 w-auto lg:h-12">
+                @if ($logo = \App\Support\SiteImage::logo())
+                    {{-- Logo: chép file vào public/images/logo.png (hoặc .svg/.webp/.jpg) --}}
+                    <img src="{{ $logo }}" alt="{{ config('site.brand') }}" class="h-10 w-auto max-w-[180px] object-contain lg:h-12 lg:max-w-[240px]">
                 @else
                     <span class="rounded bg-primary-600 px-2 py-1 text-lg font-bold leading-none text-white lg:text-xl">D&amp;T</span>
                     <span class="leading-tight">

@@ -27,7 +27,7 @@ class JsonLd
             'name' => config('site.company'),
             'alternateName' => config('site.brand'),
             'url' => url('/'),
-            'logo' => config('site.logo') ? url(config('site.logo')) : null,
+            'logo' => ($logo = SiteImage::logo()) ? url(strtok($logo, '?')) : null,
             'email' => config('site.email'),
             'telephone' => config('site.phone'),
             'address' => config('site.address'),
@@ -91,7 +91,7 @@ class JsonLd
             'publisher' => [
                 '@type' => 'Organization',
                 'name' => config('site.company'),
-                'logo' => config('site.logo') ? ['@type' => 'ImageObject', 'url' => url(config('site.logo'))] : null,
+                'logo' => ($logo = SiteImage::logo()) ? ['@type' => 'ImageObject', 'url' => url(strtok($logo, '?'))] : null,
             ],
         ];
     }

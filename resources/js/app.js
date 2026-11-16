@@ -94,14 +94,18 @@ Alpine.data('carousel', () => ({
     },
     measure() {
         const t = this.$refs.track;
-        this.pages = Math.max(1, Math.round((t.scrollWidth + this.gap()) / (t.clientWidth + this.gap())));
+        // Làm tròn lên: trang cuối chưa đầy vẫn tính là 1 trang (trừ sai số vài px).
+        this.pages = Math.max(1, Math.ceil((t.scrollWidth + this.gap()) / (t.clientWidth + this.gap()) - 0.02));
         this.arrowTop = (t.querySelector('a')?.offsetHeight || 0) / 2;
         this.onScroll();
     },
     onScroll() {
         const t = this.$refs.track;
         const max = t.scrollWidth - t.clientWidth;
-        this.page = max <= 0 ? 0 : Math.round((t.scrollLeft / max) * (this.pages - 1));
+        // Đã chạm cuối hàng -> trang cuối; còn lại tính theo bề rộng 1 trang.
+        this.page = t.scrollLeft >= max - 2
+            ? this.pages - 1
+            : Math.min(this.pages - 1, Math.round(t.scrollLeft / (t.clientWidth + this.gap())));
     },
     go(p) {
         const t = this.$refs.track;

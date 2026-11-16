@@ -14,8 +14,9 @@
         <div class="mx-auto flex max-w-site flex-col gap-6 px-4 py-8 md:flex-row md:items-center md:gap-10">
             <a href="{{ config('site.parent_site') }}" class="flex w-full shrink-0 flex-col items-center justify-center rounded-md bg-white px-5 py-6 md:w-64"
                aria-label="trangthietbi.vn">
-                @if (config('site.parent_logo'))
-                    <img src="{{ config('site.parent_logo') }}" alt="trangthietbi.vn" class="h-auto w-full" loading="lazy">
+                @if ($footerLogo = \App\Support\SiteImage::footerLogo())
+                    {{-- Logo: chép file vào public/images/logo-footer.png (hoặc .svg/.webp/.jpg) --}}
+                    <img src="{{ $footerLogo }}" alt="trangthietbi.vn" class="max-h-24 w-full object-contain" loading="lazy">
                 @else
                     <span class="text-[28px] font-extrabold leading-none tracking-tight">
                         <span class="text-ink-900">trang</span><span class="text-primary-600">thietbi</span><span class="text-ink-900">.vn</span>
