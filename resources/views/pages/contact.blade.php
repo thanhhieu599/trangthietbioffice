@@ -17,12 +17,17 @@
             <h1 class="text-xl font-bold uppercase text-ink-900">Liên hệ</h1>
             <p class="mt-1 font-semibold text-ink-800">{{ config('site.company') }}</p>
             <ul class="mt-4 space-y-3">
-                @if (config('site.address'))
-                    <li class="flex gap-3"><x-icon name="pin" class="h-5 w-5 shrink-0 text-primary-600" />{{ config('site.address') }}</li>
-                @endif
+                @foreach (config('site.addresses', []) as $addr)
+                    <li class="flex gap-3"><x-icon name="pin" class="h-5 w-5 shrink-0 text-primary-600" />
+                        <span><strong class="text-ink-900">{{ $addr['label'] }}:</strong> {{ $addr['text'] }}</span></li>
+                @endforeach
+                @foreach (config('site.contacts', []) as $c)
+                    <li class="flex gap-3"><x-icon name="user" class="h-5 w-5 shrink-0 text-primary-600" />
+                        <span>{{ $c['name'] }}: <a href="tel:{{ preg_replace('/[^0-9+]/', '', $c['phone']) }}" class="font-semibold text-primary-600">{{ $c['phone'] }}</a></span></li>
+                @endforeach
                 @if ($phone)
                     <li class="flex gap-3"><x-icon name="phone" class="h-5 w-5 shrink-0 text-primary-600" />
-                        <a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone) }}" class="font-bold text-primary-600">{{ $phone }}</a></li>
+                        <span>Hotline: <a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone) }}" class="font-bold text-primary-600">{{ $phone }}</a></span></li>
                 @endif
                 @if (config('site.email'))
                     <li class="flex gap-3"><x-icon name="mail" class="h-5 w-5 shrink-0 text-primary-600" />

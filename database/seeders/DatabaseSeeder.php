@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(CategorySeeder::class);
+        $this->call([CategorySeeder::class, PageSeeder::class]);
 
         if (app()->environment('production')) {
             return; // Không đưa dữ liệu demo lên site thật.
@@ -126,11 +126,15 @@ class DatabaseSeeder extends Seeder
             ['chon-giay-in-70gsm-hay-80gsm', 'Giấy in 70gsm hay 80gsm: chọn loại nào cho văn phòng?'],
             ['quy-trinh-mua-vpp-dinh-ky-cho-nha-may', 'Quy trình mua văn phòng phẩm định kỳ cho nhà máy'],
             ['cach-luu-tru-ho-so-iso', 'Cách sắp xếp, lưu trữ hồ sơ ISO với bìa còng và hộp hồ sơ'],
+            ['chon-bang-keo-dong-goi-cho-kho', 'Chọn băng keo đóng gói cho kho hàng: trong, đục hay giấy?'],
+            ['but-long-dau-va-but-long-bang', 'Bút lông dầu và bút lông bảng: khác nhau thế nào, dùng ở đâu?'],
+            ['kiem-soat-chi-phi-muc-in', 'Kiểm soát chi phí mực in cho văn phòng 50 – 200 người'],
+            ['danh-muc-vpp-cho-van-phong-moi', 'Danh mục văn phòng phẩm cần có cho văn phòng mới thành lập'],
         ];
         foreach ($posts as $k => [$slug, $title]) {
             Post::updateOrCreate(['slug' => $slug], [
                 'title' => $title,
-                'excerpt' => 'Bài viết mẫu – thay bằng nội dung thật.',
+                'excerpt' => 'Bài viết mẫu để xem bố cục khối Tin tức mới. Nội dung thật sẽ được đăng từ trang quản trị, kèm ảnh đại diện và mục hỏi đáp.',
                 'content' => '<p>Bài viết mẫu. Thay nội dung thật trong trang quản trị.</p>',
                 'faqs' => $k === 0 ? [['q' => 'Nên đặt VPP theo tháng hay theo quý?', 'a' => 'Hàng tiêu hao nhanh (giấy, bút) nên giao hàng tháng; hàng chậm luân chuyển có thể gom theo quý.']] : null,
                 'published_at' => now()->subDays($k),

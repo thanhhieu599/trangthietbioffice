@@ -39,7 +39,7 @@ class CatalogController extends Controller
         return view('pages.home', [
             'banners' => Banner::active()->get(),
             'sections' => $sections,
-            'posts' => Post::published()->latest('published_at')->take(4)->get(),
+            'posts' => Post::published()->latest('published_at')->take(12)->get(),
             'brands' => $this->brandList()->take(12),
         ]);
     }

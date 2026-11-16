@@ -24,6 +24,19 @@ php artisan tinker --execute="App\Models\Banner::create(['title' => 'Khuyến m�
 
 Tắt banner demo: `App\Models\Banner::where('image', 'like', '%demo-%')->delete();` (sẽ có trang quản trị ở giai đoạn sau).
 
+### Footer & thông tin doanh nghiệp
+
+Footer nền đỏ chữ trắng gồm khối giới thiệu D&T và 4 cột: Liên hệ · Danh mục sản phẩm (tự lấy theo danh mục của web) · Chính sách · Vận chuyển & thanh toán.
+Địa chỉ, người liên hệ, nội dung giới thiệu, hình thức thanh toán sửa trong `config/site.php`; hotline, email, mạng xã hội sửa trong `.env`.
+
+- **Trang chính sách** (bảng `pages`, đường dẫn `/trang/{slug}`): nội dung để trống thì trang hiện "đang cập nhật" và gắn `noindex`. Có nội dung mới được đưa vào sitemap.
+- **Logo "Đã thông báo Bộ Công Thương"** chỉ hiện khi điền `SITE_BCT_URL` (link hồ sơ trên online.gov.vn của chính tên miền này).
+- **Logo trangthietbi.vn** ở khối giới thiệu: đặt ảnh vào `public/images/` và điền `SITE_PARENT_LOGO`; để trống thì hiện logo dạng chữ.
+
+### Tin tức mới
+
+Cuối trang chủ là băng chuyền 12 bài mới nhất (4 bài/màn hình máy tính) với ảnh, tiêu đề, "Đăng bởi … – ngày", đoạn tóm tắt. Tên người đăng lấy từ cột `author` của bài viết (trống = Admin). Ảnh đại diện nên dùng tỷ lệ 16:9 (ví dụ 800 × 450 px).
+
 ### Chọn danh mục hiện trên trang chủ
 
 Sửa cột `show_on_home` (1 = hiện) và `sort_order` (thứ tự khối) trong bảng `categories`, hoặc sửa mảng trong `database/seeders/CategorySeeder.php`.

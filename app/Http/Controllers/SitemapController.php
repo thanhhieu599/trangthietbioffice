@@ -21,6 +21,9 @@ class SitemapController extends Controller
                 ['loc' => route('contact'), 'lastmod' => null],
             ]);
 
+            \App\Models\Page::all()->filter->hasContent()
+                ->each(fn ($p) => $urls->push(['loc' => $p->url(), 'lastmod' => $p->updated_at]));
+
             Product::active()->whereNotNull('brand')->where('brand', '!=', '')->distinct()->pluck('brand')
                 ->each(fn ($b) => $urls->push(['loc' => route('brands.show', \Illuminate\Support\Str::slug($b)), 'lastmod' => null]));
 

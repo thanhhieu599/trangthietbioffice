@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use App\Models\Page;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -31,6 +32,17 @@ class AppServiceProvider extends ServiceProvider
                 ->all());
 
             $view->with('menuCategories', collect($tree));
+        });
+
+        // Link trang chính sách cho footer.
+        View::composer('partials.footer', function ($view) {
+            $pages = Cache::remember('footer.pages', 600, fn () => Page::where('in_footer', true)
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn (Page $p) => ['title' => $p->title, 'url' => $p->url()])
+                ->all());
+
+            $view->with('footerPages', collect($pages));
         });
     }
 }

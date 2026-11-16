@@ -77,5 +77,38 @@ Alpine.data('quotePage', (lookupUrl) => ({
     },
 }));
 
+/*
+ * Băng chuyền trượt ngang (tin tức...): dùng cuộn gốc của trình duyệt + scroll-snap,
+ * nút trái/phải cuộn đúng 1 "trang", chấm tròn theo số trang.
+ */
+Alpine.data('carousel', () => ({
+    page: 0,
+    pages: 1,
+    arrowTop: 0, // nút trái/phải đặt giữa chiều cao ảnh
+    init() {
+        this.measure();
+        window.addEventListener('resize', () => this.measure());
+    },
+    gap() {
+        return parseFloat(getComputedStyle(this.$refs.track).columnGap) || 0;
+    },
+    measure() {
+        const t = this.$refs.track;
+        this.pages = Math.max(1, Math.round((t.scrollWidth + this.gap()) / (t.clientWidth + this.gap())));
+        this.arrowTop = (t.querySelector('a')?.offsetHeight || 0) / 2;
+        this.onScroll();
+    },
+    onScroll() {
+        const t = this.$refs.track;
+        const max = t.scrollWidth - t.clientWidth;
+        this.page = max <= 0 ? 0 : Math.round((t.scrollLeft / max) * (this.pages - 1));
+    },
+    go(p) {
+        const t = this.$refs.track;
+        const target = (p + this.pages) % this.pages;
+        t.scrollTo({ left: target * (t.clientWidth + this.gap()), behavior: 'smooth' });
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\SitemapController;
@@ -21,6 +22,7 @@ Route::permanentRedirect('/kien-thuc', '/tin-tuc');
 Route::get('/kien-thuc/{slug}', fn (string $slug) => redirect()->route('posts.show', $slug, 301));
 
 Route::view('/lien-he', 'pages.contact')->name('contact');
+Route::get('/trang/{page}', [PageController::class, 'show'])->name('pages.show');
 
 Route::get('/bao-gia', [QuoteController::class, 'create'])->name('quote.create');
 Route::post('/bao-gia', [QuoteController::class, 'store'])->middleware('throttle:5,1')->name('quote.store');
