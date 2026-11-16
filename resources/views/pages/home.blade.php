@@ -11,6 +11,11 @@
         </div>
     </div>
 
+    {{-- ===== Lưới danh mục dạng biểu tượng ===== --}}
+    <div class="mx-auto mt-4 max-w-site px-4">
+        @include('partials.category-grid')
+    </div>
+
     {{-- ===== Các khối sản phẩm theo danh mục ===== --}}
     <div class="mx-auto mt-6 max-w-site space-y-6 px-4">
         @if ($banners->isNotEmpty())

@@ -11,6 +11,7 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 - **Header:** logo · ô tìm kiếm · hotline · giỏ báo giá. Thanh menu chính màu đỏ: Trang chủ, Tin tức, Thương hiệu, Liên hệ.
 - **Danh mục sản phẩm:** nút đen bên trái thanh menu đỏ, sổ xuống danh mục cấp 1, rê chuột hiện danh mục con. Ở trang chủ menu luôn mở bên trái banner; trên điện thoại là ngăn kéo trượt.
 - **Banner trang chủ:** trình chiếu ảnh tự chuyển 5 giây, có nút trái/phải và chấm chuyển ảnh.
+- **Lưới danh mục dạng biểu tượng** giữa banner và các khối sản phẩm: hiện các danh mục cấp 1, mỗi ô gồm ảnh và tên. Máy tính 1 hàng (tối đa 10 ô), điện thoại 5 ô mỗi hàng. Đã có sẵn bộ biểu tượng mặc định (`.svg`); chép ảnh `.png` cùng tên vào là ảnh mới được ưu tiên hiển thị.
 - **Trang chủ chia khối theo danh mục:** mỗi danh mục bật `show_on_home` là một khối chỉ **1 hàng** (5 sản phẩm trên máy tính, 2 trên điện thoại). Có tối đa 15 sản phẩm, trượt qua lại bằng nút hai bên hoặc vuốt; cuối hàng có ô "Xem thêm N sản phẩm".
 - **Thẻ sản phẩm:** ảnh · tên (2 dòng) · giá gốc gạch ngang + % giảm · giá đỏ · nút "Báo giá". Một lớp viền, không lồng khung.
 
@@ -21,6 +22,7 @@ Website chuyên ngành văn phòng phẩm & vật tư tiêu hao cho doanh nghi�
 | Logo header (D&T Office) | `public/images/logo.png` | Cao 120 px, nền trong suốt (PNG/SVG) |
 | Logo khối giới thiệu ở footer (trangthietbi.vn) | `public/images/logo-footer.png` | Rộng 500 px, nền trong suốt |
 | Banner trang chủ | `public/images/banners/` (mỗi ảnh 1 file) | **1170 × 500 px** |
+| Ảnh từng danh mục ở lưới danh mục trang chủ | `public/images/categories/{đường-dẫn-danh-mục}.png`, ví dụ `bia-ho-so.png` | Vuông 256 × 256 px, nền trong suốt |
 
 - Đuôi file chấp nhận: `.png`, `.svg`, `.webp`, `.jpg`. Chưa có file thì hiện logo dạng chữ như hiện tại.
 - Banner xếp theo tên file: đặt tên `01-khuyen-mai.jpg`, `02-giao-dinh-ky.jpg`… Muốn ảnh riêng cho điện thoại (800 × 450 px) thì thêm file cùng tên có đuôi `-mobile`, ví dụ `01-khuyen-mai-mobile.jpg`.

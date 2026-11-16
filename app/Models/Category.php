@@ -66,6 +66,16 @@ class Category extends Model
         return $ids;
     }
 
+    /** Ảnh danh mục: ảnh nhập trong DB (cột image) > file public/images/categories/{slug}.* > null. */
+    public function imageUrl(): ?string
+    {
+        if ($this->image) {
+            return \App\Support\JsonLd::absolute($this->image);
+        }
+
+        return \App\Support\SiteImage::category($this->slug);
+    }
+
     public function url(): string
     {
         return route('categories.show', $this);

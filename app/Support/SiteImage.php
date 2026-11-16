@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
  *   public/images/logo.png          -> logo ở header (D&T Office)
  *   public/images/logo-footer.png   -> logo trong khối giới thiệu ở footer (trangthietbi.vn)
  *   public/images/banners/*.jpg     -> ảnh banner trang chủ (xếp theo tên file: 01-..., 02-...)
+ *   public/images/categories/{slug}.png -> ảnh/biểu tượng danh mục ở lưới danh mục trang chủ
  *
  * Đuôi file chấp nhận: svg, png, webp, jpg, jpeg.
  */
@@ -18,9 +19,9 @@ class SiteImage
     private const EXTENSIONS = ['svg', 'png', 'webp', 'jpg', 'jpeg'];
 
     /** Đường dẫn ảnh theo tên (không đuôi) trong public/images, hoặc null nếu chưa có file. */
-    public static function find(string $name): ?string
+    public static function find(string $name, array $extensions = self::EXTENSIONS): ?string
     {
-        foreach (self::EXTENSIONS as $ext) {
+        foreach ($extensions as $ext) {
             $relative = "images/{$name}.{$ext}";
             if (is_file(public_path($relative))) {
                 // Thêm thời điểm sửa file để trình duyệt tải lại khi thay logo mới.
@@ -29,6 +30,15 @@ class SiteImage
         }
 
         return null;
+    }
+
+    /**
+     * Ảnh danh mục: public/images/categories/{slug}.png (hoặc .webp/.jpg).
+     * Ảnh anh tự chép vào được ưu tiên hơn biểu tượng .svg mặc định đi kèm web.
+     */
+    public static function category(string $slug): ?string
+    {
+        return self::find('categories/'.$slug, ['png', 'webp', 'jpg', 'jpeg', 'svg']);
     }
 
     /** Logo header: file public/images/logo.* hoặc biến SITE_LOGO. */

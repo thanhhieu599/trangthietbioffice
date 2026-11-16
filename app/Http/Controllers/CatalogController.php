@@ -39,6 +39,7 @@ class CatalogController extends Controller
 
         return view('pages.home', [
             'banners' => $this->banners(),
+            'gridCategories' => Category::active()->roots()->get(),
             'sections' => $sections,
             'posts' => Post::published()->latest('published_at')->take(12)->get(),
             'brands' => $this->brandList()->take(12),
