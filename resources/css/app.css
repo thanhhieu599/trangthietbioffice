@@ -3,6 +3,8 @@
 @import '@fontsource/be-vietnam-pro/500.css';
 @import '@fontsource/be-vietnam-pro/600.css';
 @import '@fontsource/be-vietnam-pro/700.css';
+/* Font trang quản trị (Roboto, có tiếng Việt). Trình duyệt chỉ tải khi trang quản trị dùng tới. */
+@import '@fontsource-variable/roboto';
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -45,3 +47,52 @@
 .prose-content table { @apply mb-4 w-full border-collapse text-sm; }
 .prose-content th, .prose-content td { @apply border border-neutral-200 px-3 py-2 text-left; }
 .prose-content th { @apply bg-neutral-50 font-semibold; }
+
+/* =====================================================================
+ * TRANG QUẢN TRỊ (/quan-tri) – bộ thành phần dùng chung.
+ * Tông xanh than + trắng, đỏ thương hiệu chỉ dùng làm điểm nhấn.
+ * ===================================================================== */
+@theme {
+    --font-admin: 'Roboto Variable', Roboto, ui-sans-serif, system-ui, sans-serif;
+    --color-adm-bg: #f3f5f8;
+    --color-adm-line: #e4e7ec;
+    --color-adm-ink: #0f172a;
+    --color-adm-muted: #667085;
+    --color-adm-side: #0b1120;
+    --color-adm-side-2: #121a2e;
+}
+
+@layer components {
+    .adm-card { @apply rounded-xl border border-adm-line bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]; }
+    .adm-h1 { @apply text-2xl font-semibold tracking-tight text-adm-ink; }
+    .adm-sub { @apply mt-1 text-sm text-adm-muted; }
+
+    .adm-input {
+        @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-adm-ink shadow-[0_1px_2px_rgba(16,24,40,0.04)]
+            placeholder:text-slate-400 transition focus:border-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-600/10;
+    }
+    .adm-file {
+        @apply block w-full text-sm text-slate-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-slate-100
+            file:px-3 file:py-2 file:text-sm file:font-semibold file:text-adm-ink hover:file:bg-slate-200;
+    }
+
+    .adm-btn {
+        @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap
+            transition focus:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60;
+    }
+    .adm-btn-primary { @apply bg-primary-600 text-white shadow-[0_1px_2px_rgba(215,25,32,0.25)] hover:bg-primary-700 focus-visible:ring-primary-600/20; }
+    .adm-btn-dark { @apply bg-adm-ink text-white hover:bg-slate-800 focus-visible:ring-slate-900/20; }
+    .adm-btn-ghost { @apply border border-adm-line bg-white text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:border-slate-300 hover:bg-slate-50; }
+
+    .adm-thead { @apply border-b border-adm-line bg-slate-50/70 text-left text-xs font-semibold tracking-wide text-adm-muted uppercase; }
+
+    .adm-badge { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset whitespace-nowrap; }
+    .adm-badge-green { @apply bg-emerald-50 text-emerald-700 ring-emerald-600/20; }
+    .adm-badge-amber { @apply bg-amber-50 text-amber-700 ring-amber-600/20; }
+    .adm-badge-blue { @apply bg-sky-50 text-sky-700 ring-sky-600/20; }
+    .adm-badge-gray { @apply bg-slate-100 text-slate-600 ring-slate-500/20; }
+    .adm-badge-red { @apply bg-primary-50 text-primary-700 ring-primary-600/20; }
+
+    .adm-tab { @apply rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-adm-ink; }
+    .adm-tab-active { @apply bg-white text-adm-ink shadow-[0_1px_2px_rgba(16,24,40,0.08)] ring-1 ring-adm-line; }
+}

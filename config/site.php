@@ -21,6 +21,11 @@ return [
     'map_embed' => env('SITE_MAP_EMBED'), // link nhúng Google Maps cho trang Liên hệ
     'working_hours' => env('SITE_WORKING_HOURS', 'Thứ 2 – Thứ 7: 8:00 – 17:30'),
 
+    // Tình trạng hàng khai báo trong schema Product (website chưa quản lý tồn kho).
+    // Giá trị schema.org: InStock, OutOfStock, PreOrder, BackOrder, LimitedAvailability...
+    // CẦN XÁC NHẬN với doanh nghiệp: hàng có giá công khai có thực sự luôn sẵn kho không.
+    'product_availability' => env('SITE_PRODUCT_AVAILABILITY', 'InStock'),
+
     // Footer – cột Liên hệ
     'addresses' => [
         ['label' => 'Trụ sở', 'text' => '212/327/5 Nguyễn Văn Nguyễn, P. Tân Định, TP HCM'],

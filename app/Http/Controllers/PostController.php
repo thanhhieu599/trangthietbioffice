@@ -9,9 +9,10 @@ class PostController extends Controller
 {
     public function index(): View
     {
-        return view('pages.posts.index', [
-            'posts' => Post::published()->latest('published_at')->paginate(12),
-        ]);
+        $posts = Post::published()->latest('published_at')->paginate(12);
+        CatalogController::abortIfPageOutOfRange($posts);
+
+        return view('pages.posts.index', ['posts' => $posts]);
     }
 
     public function show(Post $post): View

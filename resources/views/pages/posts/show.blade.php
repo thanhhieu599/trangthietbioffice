@@ -3,6 +3,9 @@
 @section('title', ($post->meta_title ?: $post->title).' | '.config('site.brand'))
 @section('description', $post->meta_description ?: $post->excerpt)
 @section('og_type', 'article')
+@if ($post->image)
+    @section('og_image', \App\Support\JsonLd::absolute($post->image))
+@endif
 
 @push('schema')
 {!! \App\Support\JsonLd::script(\App\Support\JsonLd::article($post)) !!}

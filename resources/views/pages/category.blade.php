@@ -1,7 +1,11 @@
 @extends('layouts.app')
 
-@section('title', ($category->meta_title ?: $category->name.' cho doanh nghiệp – báo giá sỉ').' | '.config('site.brand'))
+@section('title', ($category->meta_title ?: $category->name.' cho doanh nghiệp – báo giá sỉ').($products->currentPage() > 1 ? ' – Trang '.$products->currentPage() : '').' | '.config('site.brand'))
 @section('description', $category->meta_description ?: ($category->intro ?: 'Cung cấp '.mb_strtolower($category->name).' cho văn phòng, nhà máy. Báo giá theo số lượng, giao định kỳ, hóa đơn VAT.'))
+@unless ($indexable)
+    {{-- Danh mục chưa có sản phẩm / nội dung: cho khách xem nhưng không cho Google index (trang mỏng) --}}
+    @section('robots', 'noindex, follow')
+@endunless
 @if ($products->currentPage() > 1)
     @section('canonical', $category->url().'?page='.$products->currentPage())
 @else

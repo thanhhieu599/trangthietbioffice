@@ -13,6 +13,11 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # /index.php và /index.php/... là bản trùng của trang chủ / các trang -> 301 về URL sạch.
+    # Dùng THE_REQUEST (dòng request gốc) nên không lặp với luật chuyển vào front controller bên dưới.
+    RewriteCond %{THE_REQUEST} \s/index\.php(/[^\s?]*)?[\s?] [NC]
+    RewriteRule ^index\.php(/(.*))?$ /$2 [R=301,L,NE]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
@@ -22,4 +27,35 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Hiệu năng (chỉ chạy khi hosting bật module tương ứng; thiếu module thì bỏ qua)
+# ---------------------------------------------------------------------------
+
+# Nén văn bản (HTML, CSS, JS, JSON, XML, SVG). Ảnh/font woff2 đã nén sẵn nên không nén lại.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/xml application/javascript text/javascript application/json image/svg+xml application/ld+json
+</IfModule>
+
+# Cache trình duyệt cho file tĩnh. HTML không cache (nội dung động, có phiên đăng nhập).
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/avif "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType image/x-icon "access plus 30 days"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+</IfModule>
+
+# File trong /build có mã băm trong tên (vd app-D17ZBvhS.js) -> không bao giờ đổi nội dung, cache vĩnh viễn.
+<IfModule mod_headers.c>
+    <FilesMatch "-[A-Za-z0-9_-]{8}\.(js|css|woff2)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
 </IfModule>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Văn phòng phẩm '.$brand['name'].' chính hãng – giá sỉ cho doanh nghiệp | '.config('site.brand'))
+@section('title', 'Văn phòng phẩm '.$brand['name'].' chính hãng – giá sỉ cho doanh nghiệp'.($products->currentPage() > 1 ? ' – Trang '.$products->currentPage() : '').' | '.config('site.brand'))
 @section('description', 'Các sản phẩm '.$brand['name'].' cho văn phòng, nhà máy: báo giá theo số lượng, giao định kỳ, hóa đơn VAT.')
 @section('canonical', route('brands.show', $brand['slug']).($products->currentPage() > 1 ? '?page='.$products->currentPage() : ''))
 

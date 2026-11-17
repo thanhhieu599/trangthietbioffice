@@ -17,9 +17,18 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Lệnh artisan / queue ở production (import sản phẩm, gửi email...) cũng sinh URL theo APP_URL.
+        // Với request web, middleware SeoGuard làm việc này.
+        if ($this->app->environment('production') && $this->app->runningInConsole() && config('app.url')) {
+            \Illuminate\Support\Facades\URL::forceRootUrl(rtrim(config('app.url'), '/'));
+            if (str_starts_with(config('app.url'), 'https://')) {
+                \Illuminate\Support\Facades\URL::forceScheme('https');
+            }
+        }
+
         // Cây danh mục cho menu "Danh mục sản phẩm" và footer (cache 10 phút).
         // Lưu dạng mảng thuần: Laravel 13 không cho unserialize model Eloquent từ cache.
-        View::composer(['partials.header', 'partials.footer'], function ($view) {
+        View::composer(['partials.header', 'partials.footer', 'errors.404'], function ($view) {
             $tree = Cache::remember('menu.categories', 600, fn () => Category::active()
                 ->roots()
                 ->with('children')

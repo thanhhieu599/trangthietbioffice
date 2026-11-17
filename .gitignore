@@ -29,3 +29,12 @@ Thumbs.db
 # Ảnh banner tải lên từ trang quản trị (nằm trên máy chủ, không đưa vào git)
 /public/images/banners/uploads/*
 !/public/images/banners/uploads/.gitkeep
+# Ảnh tải lên từ trang quản trị (bài viết, sản phẩm, danh mục, ảnh trong nội dung)
+/public/images/posts/uploads/*
+!/public/images/posts/uploads/.gitkeep
+/public/images/products/uploads/*
+!/public/images/products/uploads/.gitkeep
+/public/images/categories/uploads/*
+!/public/images/categories/uploads/.gitkeep
+/public/images/editor/uploads/*
+!/public/images/editor/uploads/.gitkeep

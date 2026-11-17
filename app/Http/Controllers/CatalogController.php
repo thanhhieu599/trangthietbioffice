@@ -69,6 +69,7 @@ class CatalogController extends Controller
             ->tap(fn ($q) => $this->applySort($q, $request->query('sort')))
             ->paginate(20)
             ->withQueryString();
+        self::abortIfPageOutOfRange($products);
 
         $brands = Product::active()
             ->whereIn('category_id', $category->descendantIds())
@@ -77,7 +78,10 @@ class CatalogController extends Controller
             ->orderBy('brand')
             ->pluck('brand');
 
-        return view('pages.category', compact('category', 'products', 'brands'));
+        // Danh mục chưa có sản phẩm và chưa có nội dung riêng: vẫn hiển thị cho khách nhưng không cho index.
+        $indexable = $products->total() > 0 || trim(strip_tags((string) $category->content)) !== '';
+
+        return view('pages.category', compact('category', 'products', 'brands', 'indexable'));
     }
 
     public function product(Product $product): View
@@ -97,12 +101,15 @@ class CatalogController extends Controller
     public function search(Request $request): View
     {
         $term = trim((string) $request->query('q'));
+        // Thoát ký tự đại diện của LIKE để "%" hay "_" khách gõ không khớp mọi sản phẩm.
+        // Dùng "!" làm ký tự thoát (chạy giống nhau trên MySQL và SQLite).
+        $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_substr($term, 0, 100)).'%';
         $products = $term === ''
             ? collect()
             : Product::active()
-                ->where(fn ($q) => $q->where('name', 'like', "%{$term}%")
-                    ->orWhere('sku', 'like', "%{$term}%")
-                    ->orWhere('brand', 'like', "%{$term}%"))
+                ->where(fn ($q) => $q->whereRaw("name like ? escape '!'", [$like])
+                    ->orWhereRaw("sku like ? escape '!'", [$like])
+                    ->orWhereRaw("brand like ? escape '!'", [$like]))
                 ->take(50)
                 ->get();
 
@@ -136,8 +143,15 @@ class CatalogController extends Controller
             ->tap(fn ($q) => $this->applySort($q, $request->query('sort')))
             ->paginate(20)
             ->withQueryString();
+        self::abortIfPageOutOfRange($products);
 
         return view('pages.brand', compact('brand', 'products'));
+    }
+
+    /** ?page=999 vượt quá số trang thật -> 404 (tránh trang rỗng trả 200 / soft 404). */
+    public static function abortIfPageOutOfRange(\Illuminate\Pagination\LengthAwarePaginator $paginator): void
+    {
+        abort_if($paginator->currentPage() > 1 && $paginator->currentPage() > $paginator->lastPage(), 404);
     }
 
     private function applySort($query, ?string $sort): void

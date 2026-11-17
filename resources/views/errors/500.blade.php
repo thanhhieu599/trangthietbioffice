@@ -1,0 +1,1 @@
+@include('errors.minimal-dt', ['code' => 500, 'heading' => 'Hệ thống đang gặp sự cố', 'message' => 'Chúng tôi đã ghi nhận lỗi và đang khắc phục. Vui lòng thử lại sau ít phút hoặc gọi hotline để được hỗ trợ.'])

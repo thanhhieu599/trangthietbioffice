@@ -12,7 +12,7 @@ class Category extends Model
 {
     protected $fillable = [
         'parent_id', 'name', 'slug', 'intro', 'content', 'image',
-        'meta_title', 'meta_description', 'sort_order', 'is_active', 'show_on_home',
+        'meta_title', 'meta_description', 'focus_keyword', 'sort_order', 'is_active', 'show_on_home',
     ];
 
     protected $casts = ['is_active' => 'boolean', 'show_on_home' => 'boolean'];
@@ -61,6 +61,35 @@ class Category extends Model
         $ids = [$this->id];
         foreach ($this->children as $child) {
             $ids = array_merge($ids, $child->descendantIds());
+        }
+
+        return $ids;
+    }
+
+    /**
+     * ID các danh mục đáng cho Google index: đang hiện VÀ (có sản phẩm đang bán trong nhánh, hoặc có nội dung riêng).
+     * Danh mục rỗng ("đang cập nhật") là trang mỏng -> noindex, không đưa vào sitemap. Tính bằng 2 truy vấn.
+     *
+     * @return array<int, true>
+     */
+    public static function indexableIds(): array
+    {
+        $cats = static::where('is_active', true)->get(['id', 'parent_id', 'content']);
+        $counts = Product::where('is_active', true)->whereNotNull('category_id')
+            ->selectRaw('category_id, count(*) as total')->groupBy('category_id')->pluck('total', 'category_id');
+
+        $children = $cats->groupBy('parent_id');
+        $memo = [];
+        $total = function (int $id) use (&$total, &$memo, $counts, $children): int {
+            return $memo[$id] ??= (int) ($counts[$id] ?? 0)
+                + collect($children->get($id, []))->sum(fn ($c) => $total($c->id));
+        };
+
+        $ids = [];
+        foreach ($cats as $c) {
+            if ($total($c->id) > 0 || trim(strip_tags((string) $c->content)) !== '') {
+                $ids[$c->id] = true;
+            }
         }
 
         return $ids;

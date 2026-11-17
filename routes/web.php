@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Middleware\AdminAuth;
 use App\Http\Controllers\PageController;
@@ -42,6 +46,38 @@ Route::prefix('quan-tri')->name('admin.')->group(function () {
     Route::post('/dang-xuat', [AdminAuthController::class, 'logout'])->name('logout');
 
     Route::middleware(AdminAuth::class)->group(function () {
+        Route::get('/tong-quan', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/tai-anh', [AdminDashboardController::class, 'uploadImage'])->name('upload');
+
+        // Bài viết (tin tức)
+        Route::get('/bai-viet', [AdminPostController::class, 'index'])->name('posts.index');
+        Route::get('/bai-viet/them', [AdminPostController::class, 'create'])->name('posts.create');
+        Route::post('/bai-viet', [AdminPostController::class, 'store'])->name('posts.store');
+        Route::get('/bai-viet/{post:id}', [AdminPostController::class, 'edit'])->name('posts.edit');
+        Route::post('/bai-viet/{post:id}', [AdminPostController::class, 'update'])->name('posts.update');
+        Route::post('/bai-viet/{post:id}/xoa', [AdminPostController::class, 'destroy'])->name('posts.destroy');
+
+        // Sản phẩm
+        Route::get('/san-pham', [AdminProductController::class, 'index'])->name('products.index');
+        Route::get('/san-pham/them', [AdminProductController::class, 'create'])->name('products.create');
+        Route::post('/san-pham', [AdminProductController::class, 'store'])->name('products.store');
+        Route::get('/san-pham/{product:id}', [AdminProductController::class, 'edit'])->name('products.edit');
+        Route::post('/san-pham/{product:id}', [AdminProductController::class, 'update'])->name('products.update');
+        Route::post('/san-pham/{product:id}/xoa', [AdminProductController::class, 'destroy'])->name('products.destroy');
+
+        // Danh mục sản phẩm
+        Route::get('/danh-muc', [AdminCategoryController::class, 'index'])->name('categories.index');
+        Route::get('/danh-muc/them', [AdminCategoryController::class, 'create'])->name('categories.create');
+        Route::post('/danh-muc', [AdminCategoryController::class, 'store'])->name('categories.store');
+        Route::get('/danh-muc/{category:id}', [AdminCategoryController::class, 'edit'])->name('categories.edit');
+        Route::post('/danh-muc/{category:id}', [AdminCategoryController::class, 'update'])->name('categories.update');
+        Route::post('/danh-muc/{category:id}/xoa', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+
+        // Chuyển hướng 301
+        Route::get('/chuyen-huong', [AdminDashboardController::class, 'redirects'])->name('redirects.index');
+        Route::post('/chuyen-huong', [AdminDashboardController::class, 'storeRedirect'])->name('redirects.store');
+        Route::post('/chuyen-huong/{redirect}/xoa', [AdminDashboardController::class, 'destroyRedirect'])->name('redirects.destroy');
+
         Route::get('/banner', [AdminBannerController::class, 'index'])->name('banners.index');
         Route::post('/banner', [AdminBannerController::class, 'store'])->name('banners.store');
         Route::post('/banner/{banner}', [AdminBannerController::class, 'update'])->name('banners.update');

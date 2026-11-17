@@ -14,7 +14,7 @@ class AuthController extends Controller
         abort_if(blank(config('admin.password')), 404);
 
         return $request->session()->get('admin_ok')
-            ? redirect()->route('admin.banners.index')
+            ? redirect()->route('admin.dashboard')
             : view('admin.login');
     }
 
@@ -31,7 +31,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->put('admin_ok', true);
 
-        return redirect()->intended(route('admin.banners.index'));
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     public function logout(Request $request): RedirectResponse

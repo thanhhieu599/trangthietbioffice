@@ -4,8 +4,11 @@
     $brand = config('site.brand');
     $pageTitle = $section('title') ?: $brand.' – '.config('site.tagline');
     $pageDescription = $section('description') ?: config('site.tagline');
-    $canonical = $section('canonical') ?: url()->current();
-    $ogImage = $section('og_image') ?: asset('images/og-default.jpg');
+    // Canonical mặc định = URL hiện tại không kèm tham số; bỏ "/index.php" để không sinh bản trùng của trang chủ.
+    $canonical = $section('canonical') ?: preg_replace('#/index\.php(?=/|$)#', '', url()->current());
+    // Ảnh chia sẻ: ảnh riêng của trang > public/images/og-default.* > logo. Không trỏ tới file không tồn tại.
+    $ogImage = $section('og_image') ?: (\App\Support\SiteImage::find('og-default', ['jpg', 'jpeg', 'png', 'webp']) ?: \App\Support\SiteImage::logo());
+    $ogImage = $ogImage ? \App\Support\JsonLd::absolute(strtok($ogImage, '?')) : null;
 @endphp
 <!DOCTYPE html>
 <html lang="vi">
@@ -14,7 +17,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $pageTitle }}</title>
     <meta name="description" content="{{ \Illuminate\Support\Str::limit(strip_tags($pageDescription), 160) }}">
-    <link rel="canonical" href="{{ $canonical }}">
+    {{-- Trang lỗi đặt @section('canonical', 'none') để không khai báo canonical --}}
+    @if ($canonical !== 'none')<link rel="canonical" href="{{ $canonical }}">@endif
     @hasSection('robots')<meta name="robots" content="@yield('robots')">@endif
 
     <meta property="og:type" content="@yield('og_type', 'website')">
@@ -22,8 +26,12 @@
     <meta property="og:locale" content="vi_VN">
     <meta property="og:title" content="{{ $pageTitle }}">
     <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($pageDescription), 200) }}">
-    <meta property="og:url" content="{{ $canonical }}">
-    <meta property="og:image" content="{{ $ogImage }}">
+    @if ($canonical !== 'none')<meta property="og:url" content="{{ $canonical }}">@endif
+    @if ($ogImage)<meta property="og:image" content="{{ $ogImage }}">@endif
+    <meta name="twitter:card" content="{{ $ogImage ? 'summary_large_image' : 'summary' }}">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($pageDescription), 200) }}">
+    @if ($ogImage)<meta name="twitter:image" content="{{ $ogImage }}">@endif
 
     @if (config('site.gsc_verification'))
         <meta name="google-site-verification" content="{{ config('site.gsc_verification') }}">

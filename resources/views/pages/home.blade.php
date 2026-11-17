@@ -3,6 +3,10 @@
 @section('title', 'Văn phòng phẩm cho doanh nghiệp, nhà máy – báo giá sỉ, giao định kỳ | '.config('site.brand'))
 @section('description', 'Cung cấp văn phòng phẩm và vật tư tiêu hao cho doanh nghiệp, nhà máy: giấy in, bút, bìa hồ sơ, băng keo, mực in. Báo giá theo danh mục, giao định kỳ, công nợ và hóa đơn VAT.')
 
+@push('schema')
+{!! \App\Support\JsonLd::script(\App\Support\JsonLd::website()) !!}
+@endpush
+
 @section('content')
     {{-- ===== Banner đầu trang (bên trái là menu danh mục luôn mở trên máy tính) ===== --}}
     <div class="mx-auto max-w-site px-4 pt-3">

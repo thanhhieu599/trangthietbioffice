@@ -36,6 +36,20 @@ class JsonLd
         ];
     }
 
+    /** WebSite (chỉ ở trang chủ): giúp Google hiển thị đúng tên website trên kết quả tìm kiếm. */
+    public static function website(): array
+    {
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => config('site.brand'),
+            'alternateName' => config('site.company'),
+            'url' => route('home'),
+            'inLanguage' => 'vi-VN',
+            'publisher' => ['@type' => 'Organization', 'name' => config('site.company')],
+        ];
+    }
+
     /** @param array<int, array{name: string, url: string}> $trail */
     public static function breadcrumb(array $trail): array
     {
@@ -65,11 +79,19 @@ class JsonLd
             'additionalProperty' => collect($product->specs ?? [])
                 ->map(fn ($v, $k) => ['@type' => 'PropertyValue', 'name' => $k, 'value' => $v])
                 ->values()->all(),
+            // Chỉ có Offer khi sản phẩm có giá công khai (không bao giờ đặt giá 0 / giá giả cho hàng "Liên hệ").
             'offers' => $product->price ? [
                 '@type' => 'Offer',
                 'priceCurrency' => 'VND',
                 'price' => $product->price,
-                'availability' => 'https://schema.org/InStock',
+                // Trang ghi "Giá tham khảo chưa VAT" -> khai báo đúng như vậy cho Google.
+                'priceSpecification' => [
+                    '@type' => 'UnitPriceSpecification',
+                    'price' => $product->price,
+                    'priceCurrency' => 'VND',
+                    'valueAddedTaxIncluded' => false,
+                ],
+                'availability' => 'https://schema.org/'.config('site.product_availability', 'InStock'),
                 'url' => $product->url(),
                 'seller' => ['@type' => 'Organization', 'name' => config('site.company')],
             ] : null,

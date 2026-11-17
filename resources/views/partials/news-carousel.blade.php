@@ -13,7 +13,7 @@
              class="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth">
             @foreach ($posts as $post)
                 <article class="w-[85%] shrink-0 snap-start sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]">
-                    <a href="{{ $post->url() }}" class="block aspect-[16/9] overflow-hidden bg-neutral-100">
+                    <a href="{{ $post->url() }}" class="block aspect-[16/9] overflow-hidden bg-neutral-100" aria-label="{{ $post->title }}" tabindex="-1">
                         @if ($post->image)
                             <img src="{{ \App\Support\JsonLd::absolute($post->image) }}" alt="{{ $post->title }}" loading="lazy"
                                  width="400" height="225" class="h-full w-full object-cover transition duration-300 hover:scale-105">
