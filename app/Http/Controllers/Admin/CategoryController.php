@@ -103,8 +103,14 @@ class CategoryController extends Controller
             'focus_keyword' => ['nullable', 'string', 'max:255'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
             'image' => ['nullable', ...Upload::RULE],
+            'banner' => ['nullable', ...Upload::RULE, 'dimensions:min_width=300'],
+            'page_banner' => ['nullable', ...Upload::RULE, 'dimensions:min_width=800'],
+            'banner_link' => ['nullable', 'string', 'max:500', 'regex:#^(/(?!/)|https?://)#i'],
         ], [
             'content.max' => 'Nội dung quá dài (tối đa 100.000 ký tự HTML).',
+            'banner.dimensions' => 'Banner quá nhỏ: chiều ngang tối thiểu 300 px (khuyến nghị 600 × 1000 px).',
+            'page_banner.dimensions' => 'Banner ngang quá nhỏ: chiều ngang tối thiểu 800 px (khuyến nghị 1200 × 380 px).',
+            'banner_link.regex' => 'Link banner phải bắt đầu bằng "/" (trang trong website) hoặc "https://".',
             'parent_id.not_in' => 'Không thể chọn chính danh mục này hoặc danh mục con của nó làm danh mục cha.',
         ], ['name' => 'tên danh mục']);
 
@@ -120,6 +126,7 @@ class CategoryController extends Controller
             'sort_order' => $data['sort_order'] ?? 0,
             'is_active' => $request->boolean('is_active'),
             'show_on_home' => $request->boolean('show_on_home'),
+            'banner_link' => $data['banner_link'] ?? null,
         ]);
 
         if ($request->boolean('remove_image') || $request->hasFile('image')) {
@@ -128,6 +135,15 @@ class CategoryController extends Controller
         }
         if ($request->hasFile('image')) {
             $category->image = Upload::image($request->file('image'), self::DIR, $category->slug);
+        }
+        foreach (['banner' => 'banner-', 'page_banner' => 'banner-ngang-'] as $field => $prefix) {
+            if ($request->boolean('remove_'.$field) || $request->hasFile($field)) {
+                Upload::delete($category->{$field});
+                $category->{$field} = null;
+            }
+            if ($request->hasFile($field)) {
+                $category->{$field} = Upload::image($request->file($field), self::DIR, $prefix.$category->slug);
+            }
         }
     }
 

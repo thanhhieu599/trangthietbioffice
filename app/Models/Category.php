@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 class Category extends Model
 {
     protected $fillable = [
-        'parent_id', 'name', 'slug', 'intro', 'content', 'image',
+        'parent_id', 'name', 'slug', 'intro', 'content', 'image', 'banner', 'banner_link', 'page_banner',
         'meta_title', 'meta_description', 'focus_keyword', 'sort_order', 'is_active', 'show_on_home',
     ];
 
@@ -93,6 +93,29 @@ class Category extends Model
         }
 
         return $ids;
+    }
+
+    /** Banner dọc (khối sản phẩm trang chủ); danh mục con chưa có thì dùng của danh mục cha gần nhất. */
+    public function bannerUrl(): ?string
+    {
+        return $this->inheritedImage('banner');
+    }
+
+    /** Banner ngang đầu trang danh mục; danh mục con chưa có thì dùng của danh mục cha gần nhất. */
+    public function pageBannerUrl(): ?string
+    {
+        return $this->inheritedImage('page_banner');
+    }
+
+    private function inheritedImage(string $field): ?string
+    {
+        for ($c = $this, $depth = 0; $c && $depth < 5; $c = $c->parent, $depth++) {
+            if ($c->{$field}) {
+                return \App\Support\JsonLd::absolute($c->{$field});
+            }
+        }
+
+        return null;
     }
 
     /** Ảnh danh mục: ảnh nhập trong DB (cột image) > file public/images/categories/{slug}.* > null. */

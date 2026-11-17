@@ -108,6 +108,39 @@
             @endif
         </section>
 
+        {{-- Banner của danh mục: chỉ là ảnh (vẽ sẵn chữ / nút trong ảnh nếu cần) --}}
+        <section class="adm-card p-5">
+            <h2 class="font-semibold text-adm-ink">Banner danh mục</h2>
+            <p class="mt-1 text-xs text-slate-500">Chỉ hiển thị ảnh (không chèn chữ hay nút lên trên). Ô nào chưa có ảnh thì website hiện ô chờ ảnh (nền + biểu tượng danh mục, không chữ){{ $category->parent_id ? ', hoặc dùng banner của danh mục cha' : '' }}.</p>
+
+            @foreach ([
+                'page_banner' => ['Banner ngang – đầu trang danh mục', '1200 × 380 px', '1200/380', 'w-full', 'Hiện trên cùng khi khách bấm "Xem tất cả".'],
+                'banner' => ['Banner dọc – khối sản phẩm trang chủ', '600 × 1000 px', '600/1000', 'w-32', 'Hiện bên trái 2 hàng sản phẩm ở trang chủ.'],
+            ] as $field => [$label, $size, $ratio, $width, $where])
+                <div class="mt-4 border-t border-slate-100 pt-4" x-data="{ preview: @js($category->{$field} ? \App\Support\JsonLd::absolute($category->{$field}) : null) }">
+                    <p class="text-sm font-medium text-adm-ink">{{ $label }}</p>
+                    <p class="text-xs text-slate-500">{{ $where }} Khuyến nghị <strong>{{ $size }}</strong>.</p>
+                    <div class="mt-2 {{ $width }} overflow-hidden rounded-lg border border-slate-200 bg-slate-50" @style(['aspect-ratio: '.$ratio])>
+                        <template x-if="preview"><img :src="preview" alt="" class="h-full w-full object-cover"></template>
+                        <template x-if="!preview"><div class="flex h-full items-center justify-center p-2 text-center text-xs text-slate-400">Chưa có ảnh</div></template>
+                    </div>
+                    <input type="file" name="{{ $field }}" accept="image/jpeg,image/png,image/webp"
+                           @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : preview" class="mt-2 adm-file">
+                    @if ($category->{$field})
+                        <label class="mt-2 flex items-center gap-2 text-sm text-primary-600">
+                            <input type="checkbox" name="remove_{{ $field }}" value="1" class="accent-primary-600"> Xóa ảnh này
+                        </label>
+                    @endif
+                    @if ($field === 'banner')
+                        <label class="mt-3 block">
+                            <span class="mb-1 block text-xs font-medium text-slate-600">Link khi bấm banner dọc (tùy chọn)</span>
+                            <input type="text" name="banner_link" value="{{ old('banner_link', $category->banner_link) }}" class="adm-input" placeholder="Trống = mở trang danh mục">
+                        </label>
+                    @endif
+                </div>
+            @endforeach
+        </section>
+
         @include('admin.partials.seo-panel')
     </aside>
 </form>

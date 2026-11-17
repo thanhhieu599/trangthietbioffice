@@ -35,7 +35,7 @@
     <h2 id="home-categories" class="sr-only">Danh mục sản phẩm</h2>
 
     <ul @if ($slideSm || $slideLg) x-ref="track" @scroll.debounce.50ms="onScroll()" @endif
-        class="-mr-px -mb-px {{ $trackClass }}" style="--cols: {{ $cols }};">
+        class="-mr-px -mb-px {{ $trackClass }}" @style(['--cols: '.$cols])>
         @foreach ($gridCategories as $cat)
             <li class="snap-start border-r border-b border-neutral-200 bg-white">
                 <a href="{{ $cat->url() }}"

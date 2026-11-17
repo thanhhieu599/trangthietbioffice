@@ -26,7 +26,7 @@
                 @php($issues = \App\Support\SeoAudit::category($c))
                 <tr class="align-top transition hover:bg-slate-50/80 {{ $c->is_active ? '' : 'opacity-60' }}">
                     <td class="px-4 py-3">
-                        <div class="flex items-center gap-3" style="padding-left: {{ $depth * 24 }}px">
+                        <div class="flex items-center gap-3" @style(['padding-left: '.($depth * 24).'px'])>
                             @if ($depth)<span class="text-slate-400">└</span>@endif
                             @if ($img = $c->imageUrl())
                                 <img src="{{ $img }}" alt="" class="h-8 w-8 shrink-0 object-contain" loading="lazy">

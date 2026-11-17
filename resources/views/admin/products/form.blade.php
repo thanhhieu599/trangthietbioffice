@@ -168,6 +168,15 @@
             <label class="mt-2 flex items-center gap-2 text-sm">
                 <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $product->is_featured)) class="h-4 w-4 accent-primary-600"> Sản phẩm nổi bật
             </label>
+            <label class="mt-4 block">
+                <span class="mb-1 block text-sm font-medium">Tình trạng hàng</span>
+                <select name="stock_status" class="adm-input">
+                    @foreach (\App\Models\Product::STOCK as $key => $s)
+                        <option value="{{ $key }}" @selected(old('stock_status', $product->stock_status ?: 'in_stock') === $key)>{{ $s['label'] }}</option>
+                    @endforeach
+                </select>
+                <span class="mt-1 block text-xs text-adm-muted">Hiện trên trang sản phẩm và báo cho Google.</span>
+            </label>
             <button class="mt-4 w-full adm-btn adm-btn-primary">{{ $product->exists ? 'Lưu sản phẩm' : 'Thêm sản phẩm' }}</button>
         </section>
 

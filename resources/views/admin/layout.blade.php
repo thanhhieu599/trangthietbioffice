@@ -13,16 +13,20 @@
 @if (session('admin_ok'))
     @php
         $drafts = \App\Models\Post::whereNull('published_at')->count();
+        $runningFlash = \App\Models\FlashSale::running()->exists();
+        $pendingComments = \App\Models\PostComment::where('is_approved', false)->count();
         $menu = [
             'Tổng quan' => [
                 ['admin.dashboard', 'admin.dashboard', 'Tổng quan', 'home', null],
             ],
             'Nội dung' => [
                 ['admin.posts.index', 'admin.posts.*', 'Bài viết', 'document', $drafts ?: null],
+                ['admin.comments.index', 'admin.comments.*', 'Bình luận', 'chat', $pendingComments ?: null],
             ],
             'Sản phẩm' => [
                 ['admin.products.index', 'admin.products.*', 'Sản phẩm', 'box', null],
                 ['admin.categories.index', 'admin.categories.*', 'Danh mục', 'grid', null],
+                ['admin.flash-sales.index', 'admin.flash-sales.*', 'Flash Sale', 'bolt', $runningFlash ? 'ON' : null],
             ],
         ];
         $icons = [
@@ -30,7 +34,9 @@
             'document' => '<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
             'box' => '<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/>',
             'grid' => '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
-            'eye' => '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+            'chat' => '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14.5h4"/>',
+            'bolt' =>'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>',
+            'eye' =>'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
             'logout' => '<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>',
             'external' => '<path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/>',
         ];
@@ -64,7 +70,7 @@
                             <span class="{{ $active ? 'text-white' : 'text-slate-500' }}">{!! $svg($icon) !!}</span>
                             <span class="flex-1">{{ $label }}</span>
                             @if ($badge)
-                                <span class="min-w-[1.375rem] rounded-full bg-primary-600 px-1.5 py-0.5 text-center text-[11px] font-semibold text-white" title="Bài nháp chưa đăng">{{ $badge }}</span>
+                                <span class="min-w-[1.375rem] rounded-full bg-primary-600 px-1.5 py-0.5 text-center text-[11px] font-semibold text-white" title="{{ $badge === 'ON' ? 'Chương trình đang diễn ra' : ($label === 'Bình luận' ? 'Bình luận chờ duyệt' : 'Bài nháp chưa đăng') }}">{{ $badge }}</span>
                             @endif
                         </a>
                     @endforeach

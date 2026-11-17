@@ -44,6 +44,7 @@
     <a href="{{ route('sitemap') }}" target="_blank" class="adm-btn adm-btn-ghost py-1.5">Sitemap.xml ↗</a>
     <a href="{{ route('admin.redirects.index') }}" class="adm-btn adm-btn-ghost py-1.5">Chuyển hướng 301</a>
     <a href="{{ route('admin.banners.index') }}" class="adm-btn adm-btn-ghost py-1.5">Banner trang chủ</a>
+    <a href="{{ route('admin.sapo.index') }}" class="adm-btn adm-btn-ghost py-1.5">Đồng bộ Sapo</a>
 </div>
 
 <div class="mt-6 grid gap-5 lg:grid-cols-[1fr_360px]">

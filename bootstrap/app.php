@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Đặt đầu tiên để URL gốc được cố định trước khi controller/view sinh link.
         $middleware->prepend(\App\Http\Middleware\SeoGuard::class);
+
+        // Tài khoản khách hàng: chưa đăng nhập -> trang Đăng nhập; đã đăng nhập mà vào Đăng nhập/Đăng ký -> Tài khoản.
+        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->redirectUsersTo(fn () => route('account.show'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Link cũ (đổi slug / đã xóa) -> chuyển hướng 301 theo bảng redirects, giữ thứ hạng Google.

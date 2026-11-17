@@ -31,7 +31,7 @@
 
     <div class="relative rounded-md bg-white p-3">
         <ul @if ($slideSm || $slideLg) x-ref="track" @scroll.debounce.50ms="onScroll()" @endif
-            class="gap-3 py-1 {{ $trackClass }}" style="--cols: {{ $cols }};">
+            class="gap-3 py-1 {{ $trackClass }}" @style(['--cols: '.$cols])>
             @foreach ($brands as $brand)
                 <li class="snap-start">@include('partials.brand-card')</li>
             @endforeach

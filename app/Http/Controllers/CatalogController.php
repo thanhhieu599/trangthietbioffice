@@ -14,8 +14,8 @@ use Illuminate\View\View;
 
 class CatalogController extends Controller
 {
-    /** Số sản phẩm tối đa mỗi khối trên trang chủ (1 hàng, trượt ngang: 3 trang x 5 sản phẩm). */
-    private const HOME_SECTION_SIZE = 15;
+    /** Số sản phẩm mỗi khối danh mục trên trang chủ. */
+    private const HOME_SECTION_SIZE = 8; // 2 hàng × 4 sản phẩm cạnh banner dọc
 
     public function home(): View
     {
@@ -37,8 +37,13 @@ class CatalogController extends Controller
             ->filter(fn ($s) => $s['products']->isNotEmpty())
             ->values();
 
+        $active = Banner::active()->get()->groupBy('position');
+
         return view('pages.home', [
-            'banners' => $this->banners(),
+            'banners' => $this->banners($active->get('slider', collect())),
+            'sideBanners' => $active->get('side', collect())->take(Banner::POSITIONS['side']['max']),
+            'promoBanners' => $active->get('promo', collect())->take(Banner::POSITIONS['promo']['max']),
+            'flash' => \App\Models\FlashSale::context(),
             'gridCategories' => Category::active()->roots()->get(),
             'sections' => $sections,
             'posts' => Post::published()->latest('published_at')->take(12)->get(),
@@ -50,10 +55,8 @@ class CatalogController extends Controller
      * Banner trong database (có link riêng) được ưu tiên; nếu chưa có thì tự lấy
      * ảnh trong thư mục public/images/banners (bỏ file vào là hiện).
      */
-    private function banners(): Collection
+    private function banners(Collection $banners): Collection
     {
-        $banners = Banner::active()->get();
-
         return $banners->isNotEmpty()
             ? $banners
             : SiteImage::banners()->map(fn (array $b) => new Banner($b + ['link' => route('quote.create')]));
@@ -67,7 +70,7 @@ class CatalogController extends Controller
             ->whereIn('category_id', $category->descendantIds())
             ->when($request->filled('brand'), fn ($q) => $q->where('brand', $request->query('brand')))
             ->tap(fn ($q) => $this->applySort($q, $request->query('sort')))
-            ->paginate(20)
+            ->paginate(30) // chia hết cho 5 / 3 / 2 cột: hàng cuối không lẻ
             ->withQueryString();
         self::abortIfPageOutOfRange($products);
 

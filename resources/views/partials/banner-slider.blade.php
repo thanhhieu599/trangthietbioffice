@@ -30,18 +30,18 @@
 
         @if ($banners->count() > 1)
             <button type="button" @click="go(i - 1)" aria-label="Ảnh trước"
-                    class="absolute top-1/2 left-0 z-20 -translate-y-1/2 bg-black/30 px-1.5 py-4 text-white hover:bg-black/50">
-                <x-icon name="chevron-left" />
+                    class="absolute top-1/2 left-2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-ink-800 shadow-md transition hover:bg-white">
+                <x-icon name="chevron-left" class="h-5 w-5" />
             </button>
             <button type="button" @click="go(i + 1)" aria-label="Ảnh sau"
-                    class="absolute top-1/2 right-0 z-20 -translate-y-1/2 bg-black/30 px-1.5 py-4 text-white hover:bg-black/50">
-                <x-icon name="chevron-right" />
+                    class="absolute top-1/2 right-2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-ink-800 shadow-md transition hover:bg-white">
+                <x-icon name="chevron-right" class="h-5 w-5" />
             </button>
             <div class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2">
                 @foreach ($banners as $k => $banner)
                     <button type="button" @click="go({{ $k }})" aria-label="Ảnh {{ $k + 1 }}"
-                            class="h-2.5 w-2.5 rounded-full border border-white transition"
-                            :class="i === {{ $k }} ? 'bg-white' : 'bg-white/30'"></button>
+                            class="h-2 rounded-full transition-all"
+                            :class="i === {{ $k }} ? 'w-5 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'"></button>
                 @endforeach
             </div>
         @endif

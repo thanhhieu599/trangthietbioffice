@@ -8,17 +8,20 @@
 @endpush
 
 @section('content')
-    {{-- ===== Banner đầu trang (bên trái là menu danh mục luôn mở trên máy tính) ===== --}}
-    <div class="mx-auto max-w-site px-4 pt-3">
-        <div class="aspect-[1170/500] lg:ml-[272px] lg:aspect-auto lg:h-[400px]">
-            @include('partials.banner-slider')
-        </div>
-    </div>
+    {{-- ===== Khu banner đầu trang: banner chính + 2 banner phải + hàng banner dưới (quản lý ở Quản trị → Banner) ===== --}}
+    @include('partials.home-hero')
 
     {{-- ===== Lưới danh mục dạng biểu tượng ===== --}}
     <div class="mx-auto mt-4 max-w-site px-4">
         @include('partials.category-grid')
     </div>
+
+    {{-- ===== Flash Sale (chỉ hiện khi có chương trình đang chạy) ===== --}}
+    @if ($flash['sale'] && $flash['items']->isNotEmpty())
+        <div class="mx-auto mt-6 max-w-site px-4">
+            @include('partials.flash-sale-strip')
+        </div>
+    @endif
 
     {{-- ===== Các khối sản phẩm theo danh mục ===== --}}
     <div class="mx-auto mt-6 max-w-site space-y-6 px-4">

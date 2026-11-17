@@ -80,18 +80,21 @@ class JsonLd
                 ->map(fn ($v, $k) => ['@type' => 'PropertyValue', 'name' => $k, 'value' => $v])
                 ->values()->all(),
             // Chỉ có Offer khi sản phẩm có giá công khai (không bao giờ đặt giá 0 / giá giả cho hàng "Liên hệ").
+            // Đang flash sale: khai báo giá flash + hạn giá (priceValidUntil) = lúc chương trình kết thúc.
             'offers' => $product->price ? [
                 '@type' => 'Offer',
                 'priceCurrency' => 'VND',
-                'price' => $product->price,
+                'price' => $product->currentPrice(),
+                'priceValidUntil' => $product->flashItem()?->flashSale?->ends_at?->toDateString(),
                 // Trang ghi "Giá tham khảo chưa VAT" -> khai báo đúng như vậy cho Google.
                 'priceSpecification' => [
                     '@type' => 'UnitPriceSpecification',
-                    'price' => $product->price,
+                    'price' => $product->currentPrice(),
                     'priceCurrency' => 'VND',
                     'valueAddedTaxIncluded' => false,
                 ],
-                'availability' => 'https://schema.org/'.config('site.product_availability', 'InStock'),
+                // Theo ô "Tình trạng" của từng sản phẩm trong trang quản trị ("Liên hệ" = không khai báo).
+                'availability' => $product->stockSchema() ? 'https://schema.org/'.$product->stockSchema() : null,
                 'url' => $product->url(),
                 'seller' => ['@type' => 'Organization', 'name' => config('site.company')],
             ] : null,

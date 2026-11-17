@@ -21,10 +21,16 @@ return [
     'map_embed' => env('SITE_MAP_EMBED'), // link nhúng Google Maps cho trang Liên hệ
     'working_hours' => env('SITE_WORKING_HOURS', 'Thứ 2 – Thứ 7: 8:00 – 17:30'),
 
-    // Tình trạng hàng khai báo trong schema Product (website chưa quản lý tồn kho).
-    // Giá trị schema.org: InStock, OutOfStock, PreOrder, BackOrder, LimitedAvailability...
-    // CẦN XÁC NHẬN với doanh nghiệp: hàng có giá công khai có thực sự luôn sẵn kho không.
-    'product_availability' => env('SITE_PRODUCT_AVAILABILITY', 'InStock'),
+    // 34 tỉnh/thành (sau sắp xếp đơn vị hành chính 2025) – gợi ý ở ô Tỉnh/thành phố; khách vẫn gõ tự do được.
+    'provinces' => [
+        'TP Hồ Chí Minh', 'Hà Nội', 'Hải Phòng', 'Đà Nẵng', 'Cần Thơ', 'Huế',
+        'An Giang', 'Bắc Ninh', 'Cà Mau', 'Cao Bằng', 'Đắk Lắk', 'Điện Biên', 'Đồng Nai', 'Đồng Tháp',
+        'Gia Lai', 'Hà Tĩnh', 'Hưng Yên', 'Khánh Hòa', 'Lai Châu', 'Lâm Đồng', 'Lạng Sơn', 'Lào Cai',
+        'Nghệ An', 'Ninh Bình', 'Phú Thọ', 'Quảng Ngãi', 'Quảng Ninh', 'Quảng Trị', 'Sơn La', 'Tây Ninh',
+        'Thái Nguyên', 'Thanh Hóa', 'Tuyên Quang', 'Vĩnh Long',
+    ],
+
+    // Tình trạng hàng: chọn riêng cho từng sản phẩm trong trang quản trị (cột products.stock_status).
 
     // Footer – cột Liên hệ
     'addresses' => [

@@ -35,7 +35,7 @@ class Upload
     /** Chỉ xóa file nằm trong các thư mục tải lên của trang quản trị. */
     public static function delete(?string $path): void
     {
-        if (! $path || ! preg_match('#^/images/(posts|products|categories|editor)/uploads/[^/]+$#', $path)) {
+        if (! $path || ! preg_match('#^/images/(posts|products|categories|editor|flash)/uploads/[^/]+$#', $path)) {
             return;
         }
         $full = public_path(ltrim($path, '/'));

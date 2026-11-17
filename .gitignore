@@ -38,3 +38,5 @@ Thumbs.db
 !/public/images/categories/uploads/.gitkeep
 /public/images/editor/uploads/*
 !/public/images/editor/uploads/.gitkeep
+/public/images/flash/uploads/*
+!/public/images/flash/uploads/.gitkeep

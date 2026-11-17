@@ -141,5 +141,48 @@ Alpine.data('carousel', (opts = {}) => ({
     },
 }));
 
+/*
+ * Đếm ngược Flash Sale. `end` = thời điểm kết thúc (ISO 8601 từ máy chủ).
+ * Có ngày thì hiện "N ngày"; hết giờ thì done = true (khối Flash Sale tự ẩn).
+ */
+Alpine.data('countdown', (end, cycle = 0) => ({
+    end: new Date(end).getTime(),
+    cycle: Number(cycle) || 0, // > 0: chương trình tự lặp – hết giờ thì đếm lại chu kỳ mới (giây)
+    d: 0,
+    h: '00',
+    m: '00',
+    s: '00',
+    done: false,
+    timer: null,
+    init() {
+        this.tick();
+        this.timer = setInterval(() => this.tick(), 1000);
+    },
+    destroy() {
+        clearInterval(this.timer);
+    },
+    tick() {
+        let ms = this.end - Date.now();
+        // Tự lặp: đã qua mốc kết thúc thì dời sang chu kỳ kế tiếp và đếm tiếp (không ẩn khối Flash Sale).
+        if (this.cycle > 0) {
+            while (ms <= 0) {
+                this.end += this.cycle * 1000;
+                ms = this.end - Date.now();
+            }
+        }
+        const left = Math.max(0, Math.floor(ms / 1000));
+        const pad = (n) => String(n).padStart(2, '0');
+        this.d = Math.floor(left / 86400);
+        this.h = pad(Math.floor((left % 86400) / 3600));
+        this.m = pad(Math.floor((left % 3600) / 60));
+        this.s = pad(left % 60);
+        // Chỉ coi là hết giờ khi đã THẬT SỰ qua mốc (không dựa vào số giây đã làm tròn) và không tự lặp.
+        if (ms <= 0 && !this.cycle) {
+            this.done = true;
+            clearInterval(this.timer);
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 Alpine.start();

@@ -51,6 +51,37 @@
                     </a>
                 @endif
 
+                {{-- Tài khoản khách hàng (kế bên giỏ hàng) --}}
+                @auth
+                    <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+                        <button type="button" @click="open = !open" :aria-expanded="open" aria-haspopup="true"
+                                class="flex items-center gap-2 text-left" aria-label="Tài khoản của tôi">
+                            <x-icon name="user" class="h-8 w-8 text-ink-800" />
+                            <span class="hidden leading-tight sm:block">
+                                <span class="block text-xs text-neutral-500">Xin chào</span>
+                                <span class="block max-w-[110px] truncate text-sm font-semibold text-ink-900">{{ \Illuminate\Support\Str::afterLast(trim(auth()->user()->name), ' ') }}</span>
+                            </span>
+                        </button>
+                        <div x-show="open" x-cloak x-transition.opacity
+                             class="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white py-1 text-sm shadow-xl">
+                            <p class="truncate border-b border-neutral-100 px-4 py-2 text-xs text-neutral-500">{{ auth()->user()->email }}</p>
+                            <a href="{{ route('account.show') }}" class="block px-4 py-2 hover:bg-neutral-50 hover:text-primary-600">Tài khoản của tôi</a>
+                            <a href="{{ route('account.orders') }}" class="block px-4 py-2 hover:bg-neutral-50 hover:text-primary-600">Đơn hàng của tôi</a>
+                            <form method="post" action="{{ route('logout') }}" class="border-t border-neutral-100">@csrf
+                                <button class="block w-full px-4 py-2 text-left hover:bg-neutral-50 hover:text-primary-600">Đăng xuất</button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('login') }}" aria-label="Đăng nhập"><x-icon name="user" class="h-8 w-8 text-ink-800" /></a>
+                        <span class="hidden leading-tight sm:block">
+                            <a href="{{ route('login') }}" class="block text-sm font-semibold text-ink-900 hover:text-primary-600">Đăng nhập</a>
+                            <a href="{{ route('register') }}" class="block text-xs text-neutral-500 hover:text-primary-600">Đăng ký</a>
+                        </span>
+                    </div>
+                @endauth
+
                 <a href="{{ route('quote.create') }}" class="flex items-center gap-2" x-data>
                     <span class="relative">
                         <x-icon name="cart" class="h-8 w-8 text-ink-800" />
@@ -75,25 +106,20 @@
     {{-- ===== Hàng 2: thanh menu chính màu đỏ ===== --}}
     <nav class="bg-primary-600 text-white" aria-label="Menu chính">
         <div class="relative mx-auto flex max-w-site items-stretch px-4">
-            {{-- Nút Danh mục sản phẩm (máy tính). Trang chủ: luôn mở bên trái banner. --}}
+            {{-- Nút Danh mục sản phẩm (máy tính): mọi trang đều đóng sẵn, chỉ thả xuống khi bấm. --}}
             <div class="relative hidden w-[260px] shrink-0 lg:block"
-                 x-data="{ open: @js($isHome) }"
-                 @if (! $isHome) @mouseenter="open = true" @mouseleave="open = false" @endif>
+                 x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
                 <button type="button" class="flex h-full w-full items-center gap-3 bg-ink-900 px-4 py-3 text-[15px] font-semibold"
-                        @if (! $isHome) @click="open = !open" @endif :aria-expanded="open">
+                        @click="open = !open" :aria-expanded="open" aria-controls="menu-danh-muc">
                     <x-icon name="menu" />
                     <span class="flex-1 text-left">Danh mục sản phẩm</span>
                     <x-icon name="chevron-down" class="h-4 w-4 transition" ::class="open && 'rotate-180'" />
                 </button>
 
-                {{-- Trang chủ: menu cao bằng banner, hiện tối đa $homeLimit mục; nhiều hơn thì có nút "Xem thêm" để mở hết --}}
-                @php($homeLimit = 9)
-                @php($homeMore = $isHome && $menuCategories->count() > $homeLimit + 1)
-                <ul class="absolute top-full left-0 z-40 w-full bg-ink-800 py-1.5 text-[14px] shadow-lg {{ $isHome ? 'min-h-[412px]' : '' }}"
-                    x-data="{ all: false }"
-                    x-show="open" @if (! $isHome) x-cloak x-transition.opacity @endif>
+                <ul id="menu-danh-muc" class="absolute top-full left-0 z-40 w-full bg-ink-800 py-1.5 text-[14px] shadow-lg"
+                    x-show="open" x-cloak x-transition.opacity>
                     @foreach ($menuCategories as $i => $cat)
-                        <li class="group/item" @if ($homeMore && $i >= $homeLimit) x-show="all" x-cloak @endif>
+                        <li class="group/item">
                             <a href="{{ $cat['url'] }}" class="flex items-center justify-between px-4 py-2 text-neutral-100 hover:bg-primary-600 hover:text-white">
                                 <span>{{ $cat['name'] }}</span>
                                 @if (! empty($cat['children']))<x-icon name="chevron-right" class="h-4 w-4 opacity-70" />@endif
@@ -110,15 +136,6 @@
                             @endif
                         </li>
                     @endforeach
-                    @if ($homeMore)
-                        <li>
-                            <button type="button" @click="all = !all"
-                                    class="flex w-full items-center justify-between px-4 py-2 font-semibold text-primary-100 hover:bg-primary-600 hover:text-white">
-                                <span x-text="all ? 'Thu gọn' : 'Xem thêm {{ $menuCategories->count() - $homeLimit }} danh mục'"></span>
-                                <x-icon name="chevron-down" class="h-4 w-4 transition" ::class="all && 'rotate-180'" />
-                            </button>
-                        </li>
-                    @endif
                 </ul>
             </div>
 
@@ -166,6 +183,15 @@
                     </li>
                 @endforeach
             </ul>
+            <div class="flex border-t border-neutral-200 text-sm font-semibold">
+                @auth
+                    <a href="{{ route('account.show') }}" class="flex flex-1 items-center justify-center gap-2 py-3 text-ink-800"><x-icon name="user" class="h-5 w-5" />Tài khoản</a>
+                    <a href="{{ route('account.orders') }}" class="flex flex-1 items-center justify-center gap-2 border-l border-neutral-200 py-3 text-ink-800">Đơn hàng</a>
+                @else
+                    <a href="{{ route('login') }}" class="flex flex-1 items-center justify-center gap-2 py-3 text-ink-800"><x-icon name="user" class="h-5 w-5" />Đăng nhập</a>
+                    <a href="{{ route('register') }}" class="flex flex-1 items-center justify-center border-l border-neutral-200 py-3 text-primary-600">Đăng ký</a>
+                @endauth
+            </div>
             @if ($phone)
                 <a href="tel:{{ $tel }}" class="flex items-center justify-center gap-2 bg-ink-900 py-3 font-semibold text-white">
                     <x-icon name="phone" /> {{ $phone }}

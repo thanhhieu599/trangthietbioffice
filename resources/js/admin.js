@@ -62,6 +62,48 @@ export function cleanHtml(html) {
     return doc.body.innerHTML.replace(/<p>(\s|&nbsp;|<br>)*<\/p>/g, '').trim();
 }
 
+/* ---------- Flash Sale: chọn sản phẩm + giá flash ---------- */
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('flashItems', (rows, searchUrl) => ({
+        rows: rows || [],
+        q: '',
+        results: [],
+        open: false,
+        loading: false,
+        money(v) {
+            return v ? Number(v).toLocaleString('vi-VN') + 'đ' : '';
+        },
+        has(id) {
+            return this.rows.some((r) => r.product_id === id);
+        },
+        pct(r) {
+            return r.price && r.sale_price ? Math.round(100 - (r.sale_price * 100) / r.price) : 0;
+        },
+        async search() {
+            this.loading = true;
+            try {
+                const res = await fetch(`${searchUrl}?q=${encodeURIComponent(this.q)}`, { headers: { Accept: 'application/json' } });
+                this.results = res.ok ? await res.json() : [];
+            } finally {
+                this.loading = false;
+            }
+        },
+        add(r) {
+            if (this.has(r.product_id)) return;
+            // Gợi ý mặc định giảm 10%, làm tròn xuống bội số 100đ.
+            this.rows.push({ ...r, sale_price: Math.floor((r.price * 0.9) / 100) * 100, quantity_limit: null });
+        },
+        applyAll(p) {
+            this.rows.forEach((r) => (r.sale_price = Math.floor((r.price * (100 - p)) / 100 / 100) * 100));
+        },
+        move(i, d) {
+            const j = i + d;
+            if (j < 0 || j >= this.rows.length) return;
+            [this.rows[i], this.rows[j]] = [this.rows[j], this.rows[i]];
+        },
+    }));
+});
+
 /* ---------- Thành phần chính của form quản trị ---------- */
 document.addEventListener('alpine:init', () => {
     window.Alpine.data('adminForm', (cfg) => ({

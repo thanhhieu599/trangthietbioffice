@@ -3,10 +3,16 @@
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\FlashSaleController as AdminFlashSaleController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\SapoController as AdminSapoController;
+use App\Http\Controllers\Account\AccountController;
+use App\Http\Controllers\Account\AuthController as AccountAuthController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\FlashSaleController;
 use App\Http\Middleware\AdminAuth;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
@@ -23,8 +29,11 @@ Route::get('/tim-kiem', [CatalogController::class, 'search'])->name('search');
 Route::get('/thuong-hieu', [CatalogController::class, 'brandIndex'])->name('brands.index');
 Route::get('/thuong-hieu/{slug}', [CatalogController::class, 'brandShow'])->name('brands.show');
 
+Route::get('/flash-sale', [FlashSaleController::class, 'index'])->name('flash-sale');
+
 Route::get('/tin-tuc', [PostController::class, 'index'])->name('posts.index');
 Route::get('/tin-tuc/{post}', [PostController::class, 'show'])->name('posts.show');
+Route::post('/tin-tuc/{post}/binh-luan', [PostController::class, 'comment'])->middleware('throttle:3,1')->name('posts.comment');
 Route::permanentRedirect('/kien-thuc', '/tin-tuc');
 Route::get('/kien-thuc/{slug}', fn (string $slug) => redirect()->route('posts.show', $slug, 301));
 
@@ -36,7 +45,27 @@ Route::post('/bao-gia', [QuoteController::class, 'store'])->middleware('throttle
 Route::get('/bao-gia/cam-on', [QuoteController::class, 'thanks'])->name('quote.thanks');
 Route::get('/api/quote-items', [QuoteController::class, 'lookup'])->name('quote.lookup');
 
-Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+// ===== Tài khoản khách hàng =====
+Route::middleware('guest')->group(function () {
+    Route::get('/dang-nhap', [AccountAuthController::class, 'showLogin'])->name('login');
+    Route::post('/dang-nhap', [AccountAuthController::class, 'login'])->middleware('throttle:6,1')->name('login.submit');
+    Route::get('/dang-ky', [AccountAuthController::class, 'showRegister'])->name('register');
+    Route::post('/dang-ky', [AccountAuthController::class, 'register'])->middleware('throttle:6,1')->name('register.submit');
+    Route::get('/quen-mat-khau', [AccountAuthController::class, 'showForgot'])->name('password.request');
+    Route::post('/quen-mat-khau', [AccountAuthController::class, 'sendResetLink'])->middleware('throttle:3,1')->name('password.email');
+    Route::get('/dat-lai-mat-khau/{token}', [AccountAuthController::class, 'showReset'])->name('password.reset');
+    Route::post('/dat-lai-mat-khau', [AccountAuthController::class, 'reset'])->middleware('throttle:6,1')->name('password.update');
+});
+Route::middleware('auth')->group(function () {
+    Route::post('/dang-xuat', [AccountAuthController::class, 'logout'])->name('logout');
+    Route::get('/tai-khoan', [AccountController::class, 'show'])->name('account.show');
+    Route::post('/tai-khoan', [AccountController::class, 'update'])->name('account.update');
+    Route::post('/tai-khoan/mat-khau', [AccountController::class, 'updatePassword'])->name('account.password');
+    Route::get('/tai-khoan/don-hang', [AccountController::class, 'orders'])->name('account.orders');
+    Route::get('/tai-khoan/don-hang/{order}', [AccountController::class, 'order'])->name('account.order');
+});
+
+Route::get('/sitemap.xml',[SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // ===== Khu quản trị (mật khẩu: ADMIN_PASSWORD trong .env; trống = tắt) =====
@@ -72,6 +101,26 @@ Route::prefix('quan-tri')->name('admin.')->group(function () {
         Route::get('/danh-muc/{category:id}', [AdminCategoryController::class, 'edit'])->name('categories.edit');
         Route::post('/danh-muc/{category:id}', [AdminCategoryController::class, 'update'])->name('categories.update');
         Route::post('/danh-muc/{category:id}/xoa', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+
+        // Bình luận bài viết
+        Route::get('/binh-luan', [AdminCommentController::class, 'index'])->name('comments.index');
+        Route::post('/binh-luan/{comment}/duyet', [AdminCommentController::class, 'approve'])->name('comments.approve');
+        Route::post('/binh-luan/{comment}/xoa', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
+
+        // Flash Sale
+        Route::get('/flash-sale', [AdminFlashSaleController::class, 'index'])->name('flash-sales.index');
+        Route::get('/flash-sale/them', [AdminFlashSaleController::class, 'create'])->name('flash-sales.create');
+        Route::get('/flash-sale/san-pham', [AdminFlashSaleController::class, 'products'])->name('flash-sales.products');
+        Route::post('/flash-sale', [AdminFlashSaleController::class, 'store'])->name('flash-sales.store');
+        Route::get('/flash-sale/{flashSale}', [AdminFlashSaleController::class, 'edit'])->name('flash-sales.edit');
+        Route::post('/flash-sale/{flashSale}', [AdminFlashSaleController::class, 'update'])->name('flash-sales.update');
+        Route::post('/flash-sale/{flashSale}/xoa', [AdminFlashSaleController::class, 'destroy'])->name('flash-sales.destroy');
+
+        // Đồng bộ Sapo
+        Route::get('/sapo', [AdminSapoController::class, 'index'])->name('sapo.index');
+        Route::post('/sapo/kiem-tra', [AdminSapoController::class, 'check'])->name('sapo.check');
+        Route::post('/sapo/ghep-sku', [AdminSapoController::class, 'syncVariants'])->name('sapo.variants');
+        Route::post('/sapo/gui-lai/{quote}', [AdminSapoController::class, 'retry'])->name('sapo.retry');
 
         // Chuyển hướng 301
         Route::get('/chuyen-huong', [AdminDashboardController::class, 'redirects'])->name('redirects.index');

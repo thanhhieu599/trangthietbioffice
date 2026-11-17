@@ -44,7 +44,7 @@ class SitemapController extends Controller
     {
         $body = app()->environment('production')
             // Chỉ chặn crawl các URL không có giá trị tìm kiếm. Trang quản trị được bảo vệ bằng mật khẩu, không dựa vào robots.
-            ? "User-agent: *\nDisallow: /tim-kiem\nDisallow: /bao-gia/cam-on\nDisallow: /quan-tri\nDisallow: /api/\nDisallow: /up\n\nSitemap: ".route('sitemap')."\n"
+            ? "User-agent: *\nDisallow: /tim-kiem\nDisallow: /bao-gia/cam-on\nDisallow: /quan-tri\nDisallow: /api/\nDisallow: /up\nDisallow: /tai-khoan\nDisallow: /dat-lai-mat-khau\n\nSitemap: ".route('sitemap')."\n"
             : "User-agent: *\nDisallow: /\n"; // chặn index khi chạy thử nghiệm
 
         return response($body, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);

@@ -28,6 +28,21 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    | Sapo (đồng bộ khách hàng và đơn hàng). Tạo "Ứng dụng riêng" trong trang quản trị Sapo, cấp quyền:
+    | Khách hàng (Đọc và ghi), Đơn hàng (Đọc và ghi), Đơn hàng nháp (Đọc và ghi, nếu dùng draft_order),
+    | Sản phẩm (Chỉ đọc). Điền khóa vào .env trên máy chủ – KHÔNG đưa lên git.
+    | Thiếu store/key/secret = tắt đồng bộ, website chạy bình thường.
+    */
+    'sapo' => [
+        'store' => env('SAPO_STORE'),              // VD: ten-cua-hang (=> ten-cua-hang.mysapo.net) hoặc tên miền đầy đủ
+        'key' => env('SAPO_API_KEY'),
+        'secret' => env('SAPO_API_SECRET'),
+        'order_mode' => env('SAPO_ORDER_MODE', 'order'), // order (đã xác minh trong tài liệu) | draft_order (chưa xác minh)
+        'tags' => env('SAPO_ORDER_TAGS', 'web-vpp'),
+        'country' => env('SAPO_COUNTRY', 'Vietnam'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

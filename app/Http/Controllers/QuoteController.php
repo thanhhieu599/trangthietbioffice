@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Mail\NewQuoteRequest;
 use App\Models\Product;
 use App\Models\QuoteRequest;
+use App\Services\Sapo\SapoSync;
+use App\Support\CustomerInfo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,11 +16,18 @@ use Illuminate\View\View;
 
 class QuoteController extends Controller
 {
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('pages.quote');
+        return view('pages.quote', [
+            'user' => $request->user(),
+            'provinces' => config('site.provinces', []),
+        ]);
     }
 
+    /**
+     * Bước đặt hàng. Khách đã đăng nhập: thông tin điền sẵn từ tài khoản, đơn gắn vào tài khoản.
+     * Khách chưa đăng nhập: vẫn đặt được nhưng bắt buộc nhập đủ họ tên, điện thoại, email, địa chỉ giao hàng.
+     */
     public function store(Request $request): RedirectResponse
     {
         // Bẫy chống spam: ô ẩn "website" phải để trống.
@@ -26,25 +35,43 @@ class QuoteController extends Controller
             return redirect()->route('quote.thanks');
         }
 
+        $customer = CustomerInfo::rules();
         $data = $request->validate([
-            'company' => ['required', 'string', 'max:255'],
-            'contact_name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+().\s-]{8,}$/'],
+            'contact_name' => $customer['name'],
+            'phone' => $customer['phone'],
             'email' => ['required', 'email', 'max:255'],
-            'tax_code' => ['nullable', 'string', 'max:20'],
-            'delivery_area' => ['nullable', 'string', 'max:255'],
+            'company' => $customer['company'],
+            'tax_code' => $customer['tax_code'],
+            'address' => $customer['address'],
+            'ward' => $customer['ward'],
+            'province' => $customer['province'],
             'frequency' => ['nullable', 'in:once,monthly,quarterly'],
             'note' => ['nullable', 'string', 'max:5000'],
             'source' => ['nullable', 'string', 'max:255'],
             'items' => ['nullable', 'array', 'max:200'],
             'items.*.sku' => ['required_with:items', 'string', 'max:100'],
             'items.*.quantity' => ['required_with:items', 'integer', 'min:1', 'max:1000000'],
-        ], [], [
-            'company' => 'tên công ty',
-            'contact_name' => 'người liên hệ',
-            'phone' => 'số điện thoại',
-            'note' => 'ghi chú',
-        ]);
+            // Nghị định 13/2023/NĐ-CP: khách đồng ý cho xử lý thông tin cá nhân để giao hàng / báo giá.
+            'consent' => ['accepted'],
+        ], CustomerInfo::messages(), CustomerInfo::attributes() + ['note' => 'ghi chú', 'consent' => 'việc xử lý thông tin cá nhân']);
+        unset($data['consent']);
+
+        $user = $request->user();
+        $data['user_id'] = $user?->id;
+        $data['delivery_area'] = $data['province']; // giữ cột cũ cho email / báo cáo đang dùng
+
+        // Khách đăng nhập chọn "lưu vào tài khoản": cập nhật thông tin giao hàng mặc định.
+        if ($user && $request->boolean('save_to_account')) {
+            $user->update([
+                'name' => $data['contact_name'],
+                'phone' => $data['phone'],
+                'company' => $data['company'] ?? null,
+                'tax_code' => $data['tax_code'] ?? null,
+                'address' => $data['address'],
+                'ward' => $data['ward'],
+                'province' => $data['province'],
+            ]);
+        }
 
         if (empty($data['items']) && blank($data['note'] ?? null)) {
             return back()->withInput()->withErrors([
@@ -60,16 +87,26 @@ class QuoteController extends Controller
 
             foreach ($data['items'] ?? [] as $item) {
                 $product = $products->get($item['sku']);
+                $flash = $product?->flashItem();
                 $quote->items()->create([
                     'product_id' => $product?->id,
                     'sku' => $item['sku'],
                     'name' => $product?->name ?? $item['sku'],
                     'quantity' => $item['quantity'],
+                    // Ghi lại giá lúc đặt (giá flash sale nếu đang chạy) để đơn / Sapo không lệch giá về sau.
+                    'unit_price' => $product?->currentPrice(),
+                    'is_flash_sale' => (bool) $flash,
                 ]);
             }
 
             return $quote;
         });
+
+        // Đẩy khách + đơn sang Sapo (chạy ngầm; Sapo lỗi thì tự thử lại, đơn vẫn đã lưu trên web).
+        if ($user && $request->boolean('save_to_account')) {
+            SapoSync::customer($user);
+        }
+        SapoSync::quote($quote);
 
         if ($to = config('site.quote_notify_email')) {
             try {
@@ -80,7 +117,7 @@ class QuoteController extends Controller
             }
         }
 
-        return redirect()->route('quote.thanks')->with('quote_id', $quote->id);
+        return redirect()->route('quote.thanks')->with(['quote_id' => $quote->id, 'quote_code' => $quote->code()]);
     }
 
     public function thanks(): View

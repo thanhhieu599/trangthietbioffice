@@ -15,13 +15,24 @@
         <a href="{{ $product->url() }}" class="hover:text-primary-600">{{ $product->name }}</a>
     </h3>
 
-    <div class="mt-2 flex min-h-5 items-center gap-2 text-[13px]">
-        @if ($product->hasDiscount())
-            <span class="text-neutral-400 line-through">{{ \App\Models\Product::money($product->compare_price) }}</span>
-            <span class="rounded bg-primary-50 px-1.5 py-0.5 font-medium text-primary-600">-{{ $product->discountPercent() }}%</span>
-        @endif
-    </div>
-    <p class="text-lg font-bold text-primary-600">{{ $product->formattedPrice() }}</p>
+    @if ($cardFlash = $product->flashItem())
+        {{-- Đang Flash Sale: giá flash + nhãn tia sét --}}
+        <div class="mt-2 flex min-h-5 items-center gap-2 text-[13px]">
+            <span class="text-neutral-400 line-through">{{ $product->formattedPrice() }}</span>
+            <span class="inline-flex items-center gap-0.5 rounded bg-[#ffd400] px-1.5 py-0.5 font-bold text-primary-700">
+                <svg class="h-2.5 w-2" viewBox="0 0 20 30" aria-hidden="true"><path d="M12.5 0 1 17h7l-2.5 13L19 11h-7.5L12.5 0z" fill="currentColor"/></svg>-{{ $cardFlash->discountPercent() }}%
+            </span>
+        </div>
+        <p class="text-lg font-bold text-primary-600">{{ \App\Models\Product::money((int) $cardFlash->sale_price) }}</p>
+    @else
+        <div class="mt-2 flex min-h-5 items-center gap-2 text-[13px]">
+            @if ($product->hasDiscount())
+                <span class="text-neutral-400 line-through">{{ \App\Models\Product::money($product->compare_price) }}</span>
+                <span class="rounded bg-primary-50 px-1.5 py-0.5 font-medium text-primary-600">-{{ $product->discountPercent() }}%</span>
+            @endif
+        </div>
+        <p class="text-lg font-bold text-primary-600">{{ $product->formattedPrice() }}</p>
+    @endif
 
     <div class="mt-auto flex items-center justify-between pt-2 text-[13px]">
         <span class="hidden text-neutral-500 sm:inline">{{ $product->unit ? 'ĐVT: '.$product->unit : '' }}</span>

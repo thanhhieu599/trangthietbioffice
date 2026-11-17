@@ -19,7 +19,8 @@ class NewQuoteRequest extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "[RFQ #{$this->quote->id}] {$this->quote->company} – {$this->quote->items->count()} mã",
+            subject: '['.$this->quote->code().'] '.($this->quote->company ?: $this->quote->contact_name).' – '.$this->quote->items->count().' mã'
+                .($this->quote->user_id ? ' (khách có tài khoản)' : ''),
             replyTo: [new Address($this->quote->email, $this->quote->contact_name)],
         );
     }

@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -22,46 +23,61 @@ class BannerController extends Controller
     public function index(): View
     {
         return view('admin.banners', [
-            'banners' => Banner::orderBy('sort_order')->orderBy('id')->get(),
+            'banners' => Banner::orderBy('sort_order')->orderBy('id')->get()->groupBy('position'),
             'folderBanners' => SiteImage::banners(),
         ]);
     }
 
+    /** Ảnh: kiểm tra cả nội dung (mimes) lẫn đuôi tên file (extensions) – không lưu được file .php giả ảnh. */
+    private const IMAGE = ['file', 'mimes:jpg,jpeg,png,webp', 'extensions:jpg,jpeg,png,webp', 'max:2048'];
+
+    /** Link chỉ nhận đường dẫn trong website (/...) hoặc http(s):// – chặn javascript:, data:... */
+    private const LINK = ['nullable', 'string', 'max:500', 'regex:#^(/(?!/)|https?://)#i'];
+
     public function store(Request $request): RedirectResponse
     {
+        $position = in_array($request->input('position'), array_keys(Banner::POSITIONS), true) ? $request->input('position') : 'slider';
+        $minWidth = Banner::POSITIONS[$position]['minWidth'];
+
         $data = $request->validate([
-            'image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'dimensions:min_width=800'],
-            'image_mobile' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'position' => ['required', Rule::in(array_keys(Banner::POSITIONS))],
+            'image' => ['required', ...self::IMAGE, 'dimensions:min_width='.$minWidth],
+            'image_mobile' => ['nullable', ...self::IMAGE],
             'title' => ['nullable', 'string', 'max:255'],
-            'link' => ['nullable', 'string', 'max:500'],
+            'link' => self::LINK,
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
-        ], $this->messages());
+        ], $this->messages() + ['image.dimensions' => "Ảnh quá nhỏ: chiều ngang tối thiểu {$minWidth} px (khuyến nghị ".Banner::POSITIONS[$position]['size'].' px).']);
 
         Banner::create([
+            'position' => $data['position'],
             'image' => $this->save($request->file('image')),
             'image_mobile' => $request->hasFile('image_mobile') ? $this->save($request->file('image_mobile')) : null,
             'title' => $data['title'] ?? null,
             'link' => $data['link'] ?? null,
-            'sort_order' => $data['sort_order'] ?? (Banner::max('sort_order') + 1),
+            'sort_order' => $data['sort_order'] ?? ((int) Banner::where('position', $data['position'])->max('sort_order') + 1),
             'is_active' => true,
         ]);
 
-        return back()->with('ok', 'Đã thêm banner.');
+        return back()->with('ok', 'Đã thêm '.mb_strtolower(Banner::POSITIONS[$data['position']]['label']).'.');
     }
 
     public function update(Request $request, Banner $banner): RedirectResponse
     {
         $data = $request->validate([
+            'position' => ['required', Rule::in(array_keys(Banner::POSITIONS))],
             'title' => ['nullable', 'string', 'max:255'],
-            'link' => ['nullable', 'string', 'max:500'],
+            'link' => self::LINK,
             'sort_order' => ['required', 'integer', 'min:0', 'max:999'],
             'is_active' => ['nullable', 'boolean'],
-            'image_mobile' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image' => ['nullable', ...self::IMAGE],
+            'image_mobile' => ['nullable', ...self::IMAGE],
         ], $this->messages());
 
-        if ($request->hasFile('image_mobile')) {
-            $this->delete($banner->image_mobile);
-            $data['image_mobile'] = $this->save($request->file('image_mobile'));
+        foreach (['image', 'image_mobile'] as $field) {
+            if ($request->hasFile($field)) {
+                $this->delete($banner->{$field});
+                $data[$field] = $this->save($request->file($field));
+            }
         }
         $data['is_active'] = $request->boolean('is_active');
 
@@ -81,7 +97,14 @@ class BannerController extends Controller
 
     private function save(UploadedFile $file): string
     {
-        $name = now()->format('Ymd-His').'-'.Str::lower(Str::random(6)).'.'.strtolower($file->getClientOriginalExtension());
+        // Đuôi file theo NỘI DUNG ảnh (không theo tên file trình duyệt gửi) -> không thể lưu file .php vào public/.
+        $ext = match ($file->extension()) {
+            'jpeg', 'jpg' => 'jpg',
+            'png' => 'png',
+            'webp' => 'webp',
+            default => throw new \InvalidArgumentException('Định dạng ảnh không hợp lệ.'),
+        };
+        $name = now()->format('Ymd-His').'-'.Str::lower(Str::random(6)).'.'.$ext;
         $file->move(public_path(self::DIR), $name);
 
         return '/'.self::DIR.'/'.$name;
@@ -108,7 +131,11 @@ class BannerController extends Controller
             'image_mobile.max' => 'Ảnh điện thoại tối đa 2 MB.',
             'image.uploaded' => 'Ảnh chưa tải lên được (thường do ảnh lớn hơn 2 MB) – hãy nén ảnh rồi thử lại.',
             'image_mobile.uploaded' => 'Ảnh điện thoại chưa tải lên được (thường do lớn hơn 2 MB).',
-            'image.dimensions' => 'Ảnh quá nhỏ: chiều ngang tối thiểu 800 px (khuyến nghị 1170 × 500 px).',
+            'image.dimensions' => 'Ảnh quá nhỏ so với vị trí đã chọn.',
+            'image.extensions' => 'Tên file ảnh phải có đuôi .jpg, .png hoặc .webp.',
+            'image_mobile.extensions' => 'Tên file ảnh điện thoại phải có đuôi .jpg, .png hoặc .webp.',
+            'link.regex' => 'Link phải bắt đầu bằng "/" (trang trong website) hoặc "https://".',
+            'position.in' => 'Vị trí banner không hợp lệ.',
         ];
     }
 }
