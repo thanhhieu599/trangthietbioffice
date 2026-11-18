@@ -17,7 +17,8 @@
     </div>
 
     <div class="grid gap-3 p-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <div class="hidden min-h-[26rem] lg:block">
+        {{-- Banner cao đúng bằng 2 hàng sản phẩm (thẻ thấp đi thì banner thấp theo) --}}
+        <div class="relative hidden lg:block">
             @include('partials.category-banner', ['banner' => $category->bannerUrl()])
         </div>
 

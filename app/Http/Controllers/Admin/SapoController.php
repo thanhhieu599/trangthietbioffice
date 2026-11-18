@@ -62,6 +62,9 @@ class SapoController extends Controller
     public function retry(QuoteRequest $quote, SapoClient $sapo): RedirectResponse
     {
         abort_unless($sapo->enabled(), 404);
+        if (! $sapo->canWrite()) {
+            return back()->withErrors(['sapo' => 'Đang tắt gửi dữ liệu lên Sapo (SAPO_SYNC_ENABLED=false trong .env). Bật lại rồi mới gửi đơn.']);
+        }
         if ($quote->sapo_order_id) {
             return back()->with('ok', 'Đơn '.$quote->code().' đã có trên Sapo, không gửi lại.');
         }

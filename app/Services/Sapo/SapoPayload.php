@@ -19,10 +19,13 @@ class SapoPayload
             'Nguồn: website văn phòng phẩm',
         ])->filter()->implode(' | ');
 
+        [$last, $first] = self::splitName($c['name']);
+
         return array_filter([
-            // Họ tên tiếng Việt để nguyên trong first_name (không tách họ/tên để tránh đảo thứ tự khi hiển thị).
-            'first_name' => $c['name'],
-            'email' => $c['email'],
+            // Theo trường của Sapo: last_name = Họ (+ đệm), first_name = Tên. Sapo hiển thị "Họ Tên" đúng thứ tự tiếng Việt.
+            'last_name' => $last,
+            'first_name' => $first,
+            'email' => $c['email'] ?? null,
             'phone' => $c['phone'] ?? null,
             'note' => $note,
             'tags' => config('services.sapo.tags'),
@@ -30,10 +33,22 @@ class SapoPayload
         ], fn ($v) => $v !== null && $v !== '');
     }
 
+    /** "Nguyễn Văn An" -> ["Nguyễn Văn", "An"]; tên 1 chữ -> [null, "An"]. */
+    public static function splitName(?string $name): array
+    {
+        $parts = preg_split('/\s+/u', trim((string) $name), -1, PREG_SPLIT_NO_EMPTY);
+        $first = array_pop($parts);
+
+        return [$parts ? implode(' ', $parts) : null, $first];
+    }
+
     public static function address(array $c): array
     {
+        [$last, $first] = self::splitName($c['name']);
+
         return array_filter([
-            'first_name' => $c['name'],
+            'last_name' => $last,
+            'first_name' => $first,
             'company' => $c['company'] ?? null,
             'phone' => $c['phone'] ?? null,
             'address1' => $c['address'] ?? null,
@@ -81,7 +96,8 @@ class SapoPayload
             $lines[] = ['title' => 'Yêu cầu báo giá theo ghi chú '.$q->code(), 'price' => 0, 'quantity' => 1];
         }
 
-        $frequency = ['once' => 'Mua một lần', 'monthly' => 'Định kỳ hàng tháng', 'quarterly' => 'Định kỳ hàng quý'][$q->frequency] ?? null;
+        // Đơn cũ có thể còn "nhu cầu mua" (ô này đã bỏ khỏi form đặt hàng)
+        $frequency = $q->frequency ? (['once' => 'Mua một lần', 'monthly' => 'Định kỳ hàng tháng', 'quarterly' => 'Định kỳ hàng quý'][$q->frequency] ?? null) : null;
         $note = collect([
             'Đơn từ website: '.$q->code().($q->user_id ? ' (khách có tài khoản)' : ' (khách vãng lai)'),
             $q->company ? 'Công ty: '.$q->company : null,

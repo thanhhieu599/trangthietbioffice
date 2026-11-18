@@ -22,7 +22,7 @@ class SyncCustomerToSapo implements ShouldQueue
 
     public function handle(SapoClient $sapo): void
     {
-        if (! $sapo->enabled()) {
+        if (! $sapo->canWrite()) { // chưa cấu hình hoặc đang tắt gửi (SAPO_SYNC_ENABLED=false)
             return;
         }
         $u = $this->user->fresh();

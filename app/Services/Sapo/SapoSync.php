@@ -16,14 +16,14 @@ class SapoSync
 {
     public static function customer(User $user): void
     {
-        if (app(SapoClient::class)->enabled()) {
+        if (app(SapoClient::class)->canWrite()) { // tắt gửi (SAPO_SYNC_ENABLED=false) -> không đưa việc vào hàng đợi
             self::safely(fn () => SyncCustomerToSapo::dispatch($user)->afterCommit(), ['user' => $user->id]);
         }
     }
 
     public static function quote(QuoteRequest $quote): void
     {
-        if (app(SapoClient::class)->enabled()) {
+        if (app(SapoClient::class)->canWrite()) { // tắt gửi (SAPO_SYNC_ENABLED=false) -> không đưa việc vào hàng đợi
             $quote->forceFill(['sapo_status' => 'pending', 'sapo_error' => null])->saveQuietly();
             self::safely(fn () => PushQuoteToSapo::dispatch($quote)->afterCommit(), ['quote' => $quote->id], $quote);
         }

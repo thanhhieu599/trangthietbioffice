@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1170" height="500" viewBox="0 0 1170 500">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d71920"/><stop offset="1" stop-color="#8e1014"/></linearGradient></defs>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b3262d"/><stop offset="1" stop-color="#8e1014"/></linearGradient></defs>
   <rect width="1170" height="500" fill="url(#g)"/>
   <circle cx="1020" cy="90" r="230" fill="#fff" opacity=".07"/><circle cx="920" cy="470" r="170" fill="#000" opacity=".12"/>
   <text x="90" y="135" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#fde4e4" letter-spacing="4">BANNER DEMO – THAY ẢNH 1170 x 500</text>

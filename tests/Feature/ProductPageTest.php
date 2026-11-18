@@ -16,6 +16,16 @@ class ProductPageTest extends TestCase
         $this->withoutVite();
     }
 
+    public function test_unit_row_and_name_suffix_split(): void
+    {
+        $this->assertSame(['Giấy in A4 Paper One 80gsm', '500 tờ/ram'], Product::splitUnitSuffix('Giấy in A4 Paper One 80gsm – ram 500 tờ', 'ram'));
+        $this->assertSame(['Băng keo trong 48mm x 100 yard', '6 cuộn/cây'], Product::splitUnitSuffix('Băng keo trong 48mm x 100 yard – cây 6 cuộn', 'cây'));
+        $this->assertSame(['Bìa còng bật 7cm khổ A4 – Kingjim', null], Product::splitUnitSuffix('Bìa còng bật 7cm khổ A4 – Kingjim', 'cái'));
+
+        $p = $this->product(['unit' => 'ram', 'pack_size' => '500 tờ/ram']);
+        $this->get($p->url())->assertOk()->assertSeeInOrder(['Tình trạng:', 'ĐVT:', 'Ram (500 tờ/ram)']);
+    }
+
     private function product(array $over = []): Product
     {
         return Product::create(array_merge([

@@ -94,7 +94,6 @@
 
         <section class="adm-card p-5" x-data="{ preview: @js($category->exists ? $category->imageUrl() : null) }">
             <h2 class="font-semibold text-adm-ink">Ảnh / biểu tượng</h2>
-            <p class="text-xs text-slate-500">Hiện ở lưới danh mục trang chủ. Ảnh vuông, nền trong suốt hoặc trắng, khoảng 200 × 200 px.</p>
             <template x-if="preview">
                 <img :src="preview" alt="" class="mt-2 h-24 w-24 rounded border border-slate-200 object-contain p-1">
             </template>
@@ -111,7 +110,6 @@
         {{-- Banner của danh mục: chỉ là ảnh (vẽ sẵn chữ / nút trong ảnh nếu cần) --}}
         <section class="adm-card p-5">
             <h2 class="font-semibold text-adm-ink">Banner danh mục</h2>
-            <p class="mt-1 text-xs text-slate-500">Chỉ hiển thị ảnh (không chèn chữ hay nút lên trên). Ô nào chưa có ảnh thì website hiện ô chờ ảnh (nền + biểu tượng danh mục, không chữ){{ $category->parent_id ? ', hoặc dùng banner của danh mục cha' : '' }}.</p>
 
             @foreach ([
                 'page_banner' => ['Banner ngang – đầu trang danh mục', '1200 × 380 px', '1200/380', 'w-full', 'Hiện trên cùng khi khách bấm "Xem tất cả".'],
@@ -119,7 +117,7 @@
             ] as $field => [$label, $size, $ratio, $width, $where])
                 <div class="mt-4 border-t border-slate-100 pt-4" x-data="{ preview: @js($category->{$field} ? \App\Support\JsonLd::absolute($category->{$field}) : null) }">
                     <p class="text-sm font-medium text-adm-ink">{{ $label }}</p>
-                    <p class="text-xs text-slate-500">{{ $where }} Khuyến nghị <strong>{{ $size }}</strong>.</p>
+                    <p class="text-xs text-slate-500">{{ $size }}</p>
                     <div class="mt-2 {{ $width }} overflow-hidden rounded-lg border border-slate-200 bg-slate-50" @style(['aspect-ratio: '.$ratio])>
                         <template x-if="preview"><img :src="preview" alt="" class="h-full w-full object-cover"></template>
                         <template x-if="!preview"><div class="flex h-full items-center justify-center p-2 text-center text-xs text-slate-400">Chưa có ảnh</div></template>

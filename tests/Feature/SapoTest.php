@@ -34,7 +34,7 @@ class SapoTest extends TestCase
         Http::fake([
             self::BASE.'/customers/count.json' => Http::response(['count' => 12]),
             self::BASE.'/products/count.json' => Http::response(['count' => 3]),
-            self::BASE.'/customers/search.json*' => Http::response(['customers' => []]),
+            self::BASE.'/customers.json?*' => Http::response(['customers' => []]), // tìm khách: chưa có
             self::BASE.'/customers.json' => Http::response(['customer' => ['id' => 5551]], 201),
             self::BASE.'/customers/*' => Http::response(['customer' => ['id' => 5551]]),
             self::BASE.'/orders.json' => Http::response(['order' => ['id' => 9001]], $orderStatus),
@@ -64,6 +64,20 @@ class SapoTest extends TestCase
         $this->assertNull(QuoteRequest::first()->sapo_status);
     }
 
+    public function test_write_switch_off_sends_nothing_to_sapo(): void
+    {
+        config(['services.sapo.sync' => false]);
+        Http::fake();
+
+        $this->post(route('quote.store'), $this->order())->assertRedirect(route('quote.thanks'));
+        $this->post(route('register.submit'), $this->registerData(['email' => 'khac@x.vn']))->assertRedirect();
+        Artisan::call('sapo:run', ['action' => 'retry']);
+        $this->withSession(['admin_ok' => true])->post(route('admin.sapo.retry', QuoteRequest::first()))->assertSessionHasErrors('sapo');
+
+        Http::assertNothingSent();
+        $this->assertNull(QuoteRequest::first()->sapo_status, 'Đơn chỉ lưu trên web');
+    }
+
     public function test_register_creates_customer_in_sapo_with_basic_auth(): void
     {
         $this->fakeSapo();
@@ -80,7 +94,8 @@ class SapoTest extends TestCase
             }
             $c = $r['customer'];
             $this->assertSame('Basic '.base64_encode('key-thu:secret-thu'), $r->header('Authorization')[0]);
-            $this->assertSame('Nguyễn Văn An', $c['first_name']);
+            $this->assertSame('An', $c['first_name']);          // Tên
+            $this->assertSame('Nguyễn Văn', $c['last_name']);   // Họ + đệm
             $this->assertSame('0909123456', $c['phone']);
             $this->assertStringContainsString('MST: 0312345678', $c['note']);
             $this->assertSame('Xã Bình Hưng', $c['addresses'][0]['address2']);
@@ -100,7 +115,7 @@ class SapoTest extends TestCase
         $this->actingAs($user)->post(route('account.update'), ['name' => 'An Mới', 'email' => 'an@congty.vn', 'phone' => '0909123456',
             'address' => 'x', 'ward' => 'y', 'province' => 'z'])->assertSessionHasNoErrors();
 
-        Http::assertSent(fn (Request $r) => $r->method() === 'PUT' && $r->url() === self::BASE.'/customers/5551.json' && $r['customer']['first_name'] === 'An Mới');
+        Http::assertSent(fn (Request $r) => $r->method() === 'PUT' && $r->url() === self::BASE.'/customers/5551.json' && $r['customer']['last_name'] === 'An' && $r['customer']['first_name'] === 'Mới');
         Http::assertNotSent(fn (Request $r) => $r->method() === 'POST' && str_ends_with($r->url(), '/customers.json'));
     }
 
@@ -160,7 +175,7 @@ class SapoTest extends TestCase
     {
         $this->fakeSapo();
         $this->post(route('quote.store'), $this->order());
-        Http::assertSentCount(3); // search + tạo khách + tạo đơn
+        Http::assertSentCount(3); // tìm khách theo SĐT + tạo khách + tạo đơn
 
         Artisan::call('sapo:run', ['action' => 'retry', '--id' => QuoteRequest::first()->id]);
         Http::assertSentCount(3); // đơn đã có sapo_order_id -> không gửi lại
@@ -187,5 +202,110 @@ class SapoTest extends TestCase
         $this->assertStringContainsString('cua-hang-thu.mysapo.net', $html);
         $this->assertStringNotContainsString('secret-thu', $html);
         $this->assertStringNotContainsString('key-thu', $html);
+    }
+
+    public function test_existing_sapo_customer_is_reused_instead_of_created(): void
+    {
+        Http::fake([
+            self::BASE.'/customers.json?*' => Http::response(['customers' => [['id' => 4242, 'email' => 'AN@congty.vn', 'phone' => '+84909123456']]]),
+            self::BASE.'/customers/4242.json' => Http::response(['customer' => ['id' => 4242]]),
+            self::BASE.'/customers.json' => Http::response(['errors' => [['message' => 'has already been taken']]], 422),
+            self::BASE.'/orders.json' => Http::response(['order' => ['id' => 9002]], 201),
+        ]);
+
+        $this->post(route('quote.store'), $this->order())->assertRedirect(route('quote.thanks'));
+
+        $q = QuoteRequest::first();
+        $this->assertSame('synced', $q->sapo_status, (string) $q->sapo_error);
+        $this->assertSame(9002, (int) $q->sapo_order_id);
+        // Khách đã có (trùng SĐT) -> chỉ liên kết: không tạo mới, không ghi đè dữ liệu khách bên Sapo
+        Http::assertNotSent(fn (Request $r) => $r->method() === 'PUT');
+        Http::assertNotSent(fn (Request $r) => $r->method() === 'POST' && $r->url() === self::BASE.'/customers.json');
+        Http::assertSent(fn (Request $r) => $r->url() === self::BASE.'/orders.json' && (int) $r['order']['customer']['id'] === 4242);
+        Http::assertSent(fn (Request $r) => $r->method() === 'GET' && str_contains($r->url(), 'query=0909123456')); // tìm theo SĐT
+    }
+
+    public function test_register_links_existing_phone_and_creates_new_phone(): void
+    {
+        // SĐT đã có trên Sapo -> liên kết, không tạo
+        Http::fake([
+            self::BASE.'/customers.json?*' => Http::response(['customers' => [['id' => 7001, 'email' => 'khac@x.vn', 'phone' => '0909123456']]]),
+            self::BASE.'/customers.json' => Http::response(['customer' => ['id' => 1]], 201),
+        ]);
+        $this->post(route('register.submit'), $this->registerData(['email' => 'moi@x.vn']))->assertRedirect();
+        $this->assertSame(7001, (int) User::where('email', 'moi@x.vn')->value('sapo_customer_id'));
+        Http::assertNotSent(fn (Request $r) => $r->method() === 'POST');
+    }
+
+    public function test_new_phone_with_taken_email_still_creates_customer_without_email(): void
+    {
+        $posts = 0;
+        Http::fake(function (Request $r) use (&$posts) {
+            if ($r->method() === 'GET') {
+                return Http::response(['customers' => [['id' => 7001, 'email' => 'an@congty.vn', 'phone' => '0911000000']]]); // khác SĐT
+            }
+            $posts++;
+
+            return isset($r['customer']['email'])
+                ? Http::response(['errors' => [['message' => 'has already been taken', 'code' => 'taken', 'fields' => ['email']]]], 422)
+                : Http::response(['customer' => ['id' => 8002]], 201);
+        });
+
+        $this->post(route('register.submit'), $this->registerData())->assertRedirect();
+
+        $this->assertSame(8002, (int) User::first()->sapo_customer_id, 'SĐT mới -> tạo khách mới, không gắn vào khách trùng email');
+        $this->assertSame(2, $posts);
+    }
+
+    public function test_unsupported_province_is_moved_into_address_line_and_retried(): void
+    {
+        $sent = [];
+        Http::fake(function (Request $r) use (&$sent) {
+            if ($r->method() === 'GET') {
+                return Http::response(['customers' => []]);
+            }
+            $sent[] = $r['customer'];
+
+            return isset($r['customer']['addresses'][0]['province'])
+                ? Http::response(['errors' => [['message' => 'Province is not supported', 'code' => 'unsupported', 'fields' => ['addresses', '0', 'province']]]], 422)
+                : Http::response(['customer' => ['id' => 6100]], 201);
+        });
+
+        $this->post(route('register.submit'), $this->registerData())->assertRedirect();
+
+        $this->assertSame(6100, (int) User::first()->sapo_customer_id);
+        $this->assertCount(2, $sent);
+        $this->assertSame('Xã Bình Hưng, TP Hồ Chí Minh', $sent[1]['addresses'][0]['address2']);
+        $this->assertArrayNotHasKey('city', $sent[1]['addresses'][0]);
+    }
+
+    public function test_profile_update_with_email_taken_retries_without_email(): void
+    {
+        $bodies = [];
+        Http::fake(function (Request $r) use (&$bodies) {
+            $bodies[] = $r['customer'];
+
+            return isset($r['customer']['email'])
+                ? Http::response(['errors' => [['message' => 'has already been taken', 'code' => 'taken', 'fields' => ['email']]]], 422)
+                : Http::response(['customer' => ['id' => 5551]]);
+        });
+        $user = User::create(['name' => 'An', 'email' => 'an@congty.vn', 'password' => 'matkhau123', 'phone' => '0909123456', 'address' => 'x', 'ward' => 'y', 'province' => 'z']);
+        $user->forceFill(['sapo_customer_id' => 5551])->save();
+
+        $this->actingAs($user)->post(route('account.update'), ['name' => 'An', 'email' => 'trung@x.vn', 'phone' => '0909123456', 'address' => 'x', 'ward' => 'y', 'province' => 'z'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertCount(2, $bodies);
+        $this->assertArrayNotHasKey('email', $bodies[1]);
+        $this->assertNotNull($user->fresh()->sapo_synced_at);
+    }
+
+    private function registerData(array $over = []): array
+    {
+        return array_merge([
+            'name' => 'Nguyễn Văn An', 'email' => 'an@congty.vn', 'phone' => '0909123456', 'company' => '',
+            'tax_code' => '', 'address' => '87 Đường 16', 'ward' => 'Xã Bình Hưng', 'province' => 'TP Hồ Chí Minh',
+            'password' => 'matkhau123', 'password_confirmation' => 'matkhau123', 'terms' => '1',
+        ], $over);
     }
 }

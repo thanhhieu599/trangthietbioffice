@@ -16,7 +16,6 @@
             <span class="text-xs font-normal" :class="(f.meta_title || '').length > 55 ? 'text-primary-600' : 'text-slate-500'" x-text="(f.meta_title || '').length + ' ký tự'"></span>
         </span>
         <input type="text" name="meta_title" x-model="f.meta_title" maxlength="255" :placeholder="defaultTitle" class="{{ $input }}">
-        <span class="mt-0.5 block text-xs text-slate-500">Để trống = dùng tên mặc định. Website tự thêm “| {{ config('site.brand') }}” ở cuối.</span>
     </label>
 
     <label class="mt-3 block">
@@ -45,7 +44,6 @@
                 <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full" :class="c.ok ? 'bg-emerald-500' : (c.warn ? 'bg-amber-400' : 'bg-primary-600')"></span>
                 <span>
                     <span :class="c.ok ? 'text-slate-700' : 'font-medium text-adm-ink'" x-text="c.label"></span>
-                    <span x-show="!c.ok" class="block text-xs text-slate-500" x-text="c.tip"></span>
                 </span>
             </li>
         </template>

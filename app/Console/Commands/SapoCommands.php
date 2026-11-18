@@ -102,6 +102,11 @@ class SapoCommands extends Command
 
     private function retry(): int
     {
+        if (! app(SapoClient::class)->canWrite()) {
+            $this->error('Đang tắt gửi dữ liệu lên Sapo (SAPO_SYNC_ENABLED=false trong .env). Không gửi đơn nào.');
+
+            return self::FAILURE;
+        }
         $query = QuoteRequest::query()->whereNull('sapo_order_id');
         $query = $this->option('id')
             ? $query->whereKey($this->option('id'))

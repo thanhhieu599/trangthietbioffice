@@ -108,6 +108,12 @@ class ImportProducts extends Command
             }
         }
 
+        // Tên có đuôi "– ram 500 tờ" trùng ĐVT: bỏ khỏi tên, chuyển sang quy cách (trang sản phẩm có dòng ĐVT riêng).
+        [$attrs['name'], $pack] = \App\Models\Product::splitUnitSuffix($attrs['name'], $attrs['unit'] ?? null);
+        if ($pack !== null && empty($attrs['pack_size'])) {
+            $attrs['pack_size'] = $pack;
+        }
+
         foreach (['price', 'compare_price'] as $col) {
             if (array_key_exists($col, $d)) {
                 $digits = preg_replace('/\D/', '', $d[$col]);

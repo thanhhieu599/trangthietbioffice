@@ -38,6 +38,9 @@ return [
         'store' => env('SAPO_STORE'),              // VD: ten-cua-hang (=> ten-cua-hang.mysapo.net) hoặc tên miền đầy đủ
         'key' => env('SAPO_API_KEY'),
         'secret' => env('SAPO_API_SECRET'),
+        // Công tắc GỬI dữ liệu lên Sapo (tạo/cập nhật khách, tạo đơn). false = chỉ ĐỌC từ Sapo
+        // (kéo sản phẩm, ghép SKU vẫn chạy) – đặt false trên máy thử để không đẩy đơn/khách thử sang Sapo thật.
+        'sync' => (bool) env('SAPO_SYNC_ENABLED', true),
         'order_mode' => env('SAPO_ORDER_MODE', 'order'), // order (đã xác minh trong tài liệu) | draft_order (chưa xác minh)
         'tags' => env('SAPO_ORDER_TAGS', 'web-vpp'),
         'country' => env('SAPO_COUNTRY', 'Vietnam'),

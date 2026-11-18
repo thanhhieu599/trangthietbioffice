@@ -189,5 +189,4 @@
             <span :class="htmlLength > maxHtml && 'font-semibold text-primary-600'">HTML: <span x-text="htmlLength.toLocaleString('vi-VN')"></span>/<span x-text="maxHtml.toLocaleString('vi-VN')"></span></span>
         </div>
     </div>
-    @isset($hint)<p class="mt-1.5 text-xs text-slate-500">{{ $hint }}</p>@endisset
 </div>

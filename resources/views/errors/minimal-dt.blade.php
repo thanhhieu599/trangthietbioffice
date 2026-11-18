@@ -11,14 +11,14 @@
     <title>{{ $heading }} | {{ config('site.brand', 'D&T Office') }}</title>
     <style>
         body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f5f5f5;
-               font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #333; padding: 16px; box-sizing: border-box; }
+               font-family: Roboto, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif; color: #333; padding: 16px; box-sizing: border-box; }
         .box { max-width: 520px; width: 100%; background: #fff; border-radius: 8px; padding: 32px; text-align: center; }
-        .code { font-size: 48px; font-weight: 700; color: #d71920; margin: 0; }
+        .code { font-size: 48px; font-weight: 700; color: #b3262d; margin: 0; }
         h1 { font-size: 22px; color: #141414; margin: 12px 0 8px; }
         p { margin: 0; line-height: 1.6; color: #555; }
         .links { margin-top: 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        a { color: #d71920; text-decoration: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 6px; }
-        a:hover { border-color: #d71920; }
+        a { color: #b3262d; text-decoration: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 6px; }
+        a:hover { border-color: #b3262d; }
     </style>
 </head>
 <body>

@@ -7,7 +7,6 @@
 <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
         <h1 class="adm-h1">Flash Sale</h1>
-        <p class="adm-sub">Chương trình đang diễn ra hiện ở trang chủ (giữa lưới danh mục và các khối sản phẩm) và trang <a href="{{ route('flash-sale') }}" target="_blank" class="text-primary-600 hover:underline">/flash-sale</a>.</p>
     </div>
     <a href="{{ route('admin.flash-sales.create') }}" class="adm-btn adm-btn-primary">+ Tạo chương trình</a>
 </div>

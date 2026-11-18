@@ -65,11 +65,12 @@ class HomeBannerTest extends TestCase
         $this->assertSame(0, Banner::count());
     }
 
-    public function test_admin_page_shows_layout_map_and_groups(): void
+    public function test_admin_page_shows_groups_with_add_tiles(): void
     {
         $this->make('side', 'Ben-phai');
         $this->admin()->get(route('admin.banners.index'))->assertOk()
-            ->assertSee('Sơ đồ khu banner trang chủ')->assertSee('Banner bên phải')->assertSee('Hàng banner nhỏ bên dưới')->assertSee('600 × 230');
+            ->assertSee('Banner chính (trình chiếu)')->assertSee('Banner bên phải')->assertSee('Hàng banner nhỏ bên dưới')
+            ->assertSee('600 × 230')->assertSee('đang hiện 1/2')->assertSee('Thêm ảnh');
     }
 
     public function test_admin_can_move_banner_to_another_position(): void

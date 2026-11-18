@@ -33,26 +33,21 @@
                     </div>
                 </div>
             @else
-                <div class="relative overflow-hidden rounded-xl bg-[linear-gradient(120deg,#b31217_0%,#e3262d_50%,#ff6a3d_100%)] px-6 py-10 text-white shadow-[0_12px_40px_-14px_rgba(215,25,32,.6)] md:px-12 md:py-14">
+                <div class="relative overflow-hidden rounded-xl bg-[linear-gradient(120deg,#8f1d22_0%,#b3262d_50%,#d9573a_100%)] px-6 py-10 text-white shadow-[0_12px_40px_-14px_rgba(179,38,45,.6)] md:px-12 md:py-14">
                     <svg class="pointer-events-none absolute -top-16 right-10 h-96 w-64 rotate-12 text-white/10" viewBox="0 0 20 30" aria-hidden="true"><path d="M12.5 0 1 17h7l-2.5 13L19 11h-7.5L12.5 0z" fill="currentColor"/></svg>
                     <svg class="pointer-events-none absolute -bottom-24 left-1/2 h-80 w-56 -rotate-12 text-white/[0.06]" viewBox="0 0 20 30" aria-hidden="true"><path d="M12.5 0 1 17h7l-2.5 13L19 11h-7.5L12.5 0z" fill="currentColor"/></svg>
                     <div class="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-[#ffd400]/20 blur-3xl"></div>
 
                     <div class="relative grid items-center gap-8 md:grid-cols-[1fr_auto]">
                         <div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide uppercase ring-1 ring-white/25 backdrop-blur">
-                                <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ffd400]"></span> Đang diễn ra
-                            </span>
-                            <h1 class="mt-4">
+                            <h1>
                                 <span class="inline-flex items-center gap-2 text-4xl font-black italic tracking-tight md:text-6xl">
                                     FLASH
                                     <svg class="h-12 w-8 drop-shadow md:h-16 md:w-11" viewBox="0 0 20 30" aria-hidden="true"><path d="M12.5 0 1 17h7l-2.5 13L19 11h-7.5L12.5 0z" fill="#ffd400"/></svg>
                                     SALE
                                 </span>
                                 <span class="mt-2 block text-lg font-semibold text-white/95 md:text-2xl">{{ $sale->name }}</span>
-                            </h1>
-                            <p class="mt-2 max-w-xl text-white/85">Giá sốc cho {{ $items->count() }} sản phẩm văn phòng phẩm – số lượng có hạn, hết giờ là hết ưu đãi.</p>
-                        </div>
+                            </h1>                        </div>
                         <div class="rounded-2xl bg-black/20 p-5 ring-1 ring-white/20 backdrop-blur-sm">
                             <p class="mb-3 text-center text-sm font-medium text-white/90" x-text="done ? 'Chương trình đã kết thúc' : 'Kết thúc sau'">Kết thúc sau</p>
                             <div x-show="!done" class="flex justify-center">@include('partials.flash.countdown', ['big' => true, 'dark' => true])</div>
@@ -104,7 +99,7 @@
         {{-- ===== Chưa có chương trình ===== --}}
         <div class="rounded-xl bg-white px-6 py-14 text-center">
             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-50">
-                <svg class="h-9 w-6" viewBox="0 0 20 30" aria-hidden="true"><path d="M12.5 0 1 17h7l-2.5 13L19 11h-7.5L12.5 0z" fill="#d71920"/></svg>
+                <svg class="h-9 w-6" viewBox="0 0 20 30" aria-hidden="true"><path d="M12.5 0 1 17h7l-2.5 13L19 11h-7.5L12.5 0z" fill="#b3262d"/></svg>
             </div>
             <h1 class="mt-4 text-xl font-bold text-ink-900">Hiện chưa có chương trình Flash Sale</h1>
             <p class="mt-1 text-neutral-600">Chương trình tiếp theo sẽ sớm diễn ra. Trong lúc chờ, anh/chị có thể xem sản phẩm hoặc gửi yêu cầu báo giá sỉ.</p>

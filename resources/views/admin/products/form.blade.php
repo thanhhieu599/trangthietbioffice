@@ -72,7 +72,7 @@
             </label>
             <div class="grid grid-cols-2 gap-3">
                 <label class="block">
-                    <span class="mb-1 block text-sm font-medium">Đơn vị tính</span>
+                    <span class="mb-1 block text-sm font-medium">Đơn vị tính (ĐVT)</span>
                     <input type="text" name="unit" value="{{ old('unit', $product->unit) }}" maxlength="50" class="{{ $input }}" placeholder="ram, hộp…">
                 </label>
                 <label class="block">
@@ -89,9 +89,60 @@
                 <input type="number" name="compare_price" min="0" step="1" value="{{ old('compare_price', $product->compare_price) }}" class="{{ $input }}" placeholder="Tùy chọn">
             </label>
             <label class="block sm:col-span-2">
-                <span class="mb-1 block text-sm font-medium">Quy cách đóng gói</span>
-                <input type="text" name="pack_size" value="{{ old('pack_size', $product->pack_size) }}" maxlength="255" class="{{ $input }}" placeholder="VD: 5 ram/thùng">
+                <span class="mb-1 block text-sm font-medium">Quy cách</span>
+                <input type="text" name="pack_size" value="{{ old('pack_size', $product->pack_size) }}" maxlength="255" class="{{ $input }}" placeholder="VD: 500 tờ/ram">
             </label>
+            {{-- ===== Thuộc tính (giống Sapo): Tên thuộc tính + Giá trị, "Màu sắc" hiện chấm màu trên website ===== --}}
+            @php
+                $attrRows = old('attrs') !== null
+                    ? collect(old('attrs'))->map(fn ($a) => ['name' => $a['name'] ?? '', 'values' => $a['values'] ?? ''])->values()->all()
+                    : collect($product->attrList())->map(fn ($a) => ['name' => $a['name'], 'values' => implode(', ', $a['values'])])->all();
+                $colorMap = collect(\App\Support\Colors::all());
+            @endphp
+            <div class="rounded-lg border border-slate-200 bg-slate-50/70 p-4 sm:col-span-2"
+                 x-data="{ rows: @js($attrRows ?: [['name' => '', 'values' => '']]), colors: @js($colorMap),
+                           isColor(n) { return /m[aà]u/i.test(n || '') },
+                           vals(s) { return (s || '').split(/\s*[,;]\s*/).map(v => v.trim()).filter(Boolean) },
+                           hex(v) { const k = v.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().trim().replace(/\s+/g, '-');
+                                    const hit = Object.keys(this.colors).find(c => k === c || k.startsWith(c + '-')); return hit ? this.colors[hit] : '#d1d5db' } }">
+                <div class="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 text-sm">
+                    <span class="font-semibold text-adm-ink">Tên thuộc tính</span>
+                    <span class="font-semibold text-adm-ink">Giá trị</span>
+                    <span></span>
+                    <template x-for="(r, i) in rows" :key="i">
+                        <div class="contents">
+                            <input type="text" :name="`attrs[${i}][name]`" x-model="r.name" maxlength="50" list="attr-names" class="{{ $input }}" placeholder="Màu sắc">
+                            <div class="min-w-0">
+                                <input type="text" :name="`attrs[${i}][values]`" x-model="r.values" maxlength="1000" class="{{ $input }}" placeholder="Nhập giá trị thuộc tính, cách nhau bằng dấu phẩy">
+                                <div x-show="isColor(r.name) && vals(r.values).length" class="mt-1.5 flex flex-wrap gap-1.5">
+                                    <template x-for="v in vals(r.values)" :key="v">
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-white py-0.5 pr-2 pl-0.5 text-xs ring-1 ring-slate-200">
+                                            <span class="h-4 w-4 rounded-full border border-black/10" :style="`background:${hex(v)}`"></span><span x-text="v"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+                            <button type="button" @click="rows.splice(i, 1); rows.length || rows.push({ name: '', values: '' })" class="self-start rounded p-2 text-slate-400 hover:bg-slate-200 hover:text-primary-600" aria-label="Xóa thuộc tính">✕</button>
+                        </div>
+                    </template>
+                </div>
+                <datalist id="attr-names"><option value="Màu sắc"><option value="Kích thước"><option value="Chất liệu"><option value="Dung lượng"><option value="Quy cách"></datalist>
+                <button type="button" @click="rows.push({ name: '', values: '' })" class="adm-btn adm-btn-ghost mt-3 py-1.5">Thêm thuộc tính khác</button>
+
+                @if ($variants = $product->variantList())
+                    <div class="mt-4 border-t border-slate-200 pt-3">
+                        <p class="mb-2 text-sm font-semibold text-adm-ink">Phiên bản (SKU từ Sapo)</p>
+                        <ul class="space-y-1 text-sm">
+                            @foreach ($variants as $v)
+                                <li class="flex flex-wrap justify-between gap-2 rounded bg-white px-3 py-1.5 ring-1 ring-slate-200">
+                                    <span><span class="font-medium text-adm-ink">{{ $v['sku'] }}</span> · {{ \App\Models\Product::optionLabel($v['options'] ?? []) ?: '—' }}</span>
+                                    <span class="text-slate-500">{{ ! empty($v['price']) ? \App\Models\Product::money((int) $v['price']) : 'Liên hệ' }}{{ ($v['stock_status'] ?? '') === 'out_of_stock' ? ' · Hết hàng' : '' }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
             <label class="block sm:col-span-2">
                 <span class="mb-1 block text-sm font-medium">Mô tả ngắn</span>
                 <textarea name="short_description" x-model="f.summary" rows="3" maxlength="1000" class="{{ $input }}"
@@ -102,7 +153,6 @@
         {{-- Ảnh sản phẩm --}}
         <section class="adm-card p-5">
             <h2 class="font-semibold text-adm-ink">Ảnh sản phẩm</h2>
-            <p class="text-xs text-slate-500">Ảnh đầu tiên là ảnh chính. Ảnh vuông, nền trắng, tối thiểu 800 × 800 px, tối đa 3 MB/ảnh. Tên file ảnh mới được đặt theo tên sản phẩm (tốt cho Google Hình ảnh).</p>
             <div class="mt-3 flex flex-wrap gap-3">
                 <template x-for="(img, i) in images" :key="img">
                     <div class="w-28">
@@ -142,7 +192,6 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="font-semibold text-adm-ink">Thông số kỹ thuật</h2>
-                    <p class="text-xs text-slate-500">VD: Định lượng – 80gsm; Khổ – A4 (210 × 297 mm).</p>
                 </div>
                 <button type="button" @click="rows.push({ k: '', v: '' })" class="adm-btn adm-btn-ghost">+ Thêm dòng</button>
             </div>
@@ -175,7 +224,6 @@
                         <option value="{{ $key }}" @selected(old('stock_status', $product->stock_status ?: 'in_stock') === $key)>{{ $s['label'] }}</option>
                     @endforeach
                 </select>
-                <span class="mt-1 block text-xs text-adm-muted">Hiện trên trang sản phẩm và báo cho Google.</span>
             </label>
             <button class="mt-4 w-full adm-btn adm-btn-primary">{{ $product->exists ? 'Lưu sản phẩm' : 'Thêm sản phẩm' }}</button>
         </section>

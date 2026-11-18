@@ -7,7 +7,6 @@
     <tr><td><b>Email</b></td><td>{{ $quote->email }}</td></tr>
     <tr><td><b>Giao đến</b></td><td>{{ $quote->fullAddress() }}</td></tr>
     <tr><td><b>Tài khoản</b></td><td>{{ $quote->user_id ? 'Có (khách đã đăng nhập)' : 'Khách vãng lai' }}</td></tr>
-    <tr><td><b>Nhu cầu</b></td><td>{{ ['once' => 'Một lần', 'monthly' => 'Hàng tháng', 'quarterly' => 'Hàng quý'][$quote->frequency] ?? '' }}</td></tr>
     <tr><td><b>Nguồn</b></td><td>{{ $quote->source }}</td></tr>
 </table>
 

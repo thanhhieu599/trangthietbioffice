@@ -131,9 +131,8 @@ document.addEventListener('alpine:init', () => {
         maxHtml: 100000,
         fonts: [
             ['Mặc định', ''],
-            ['Roboto', 'Roboto, Arial, sans-serif'],
+            ['Roboto', "'Roboto Variable', Roboto, Arial, sans-serif"],
             ['Arial', 'Arial, Helvetica, sans-serif'],
-            ['Be Vietnam Pro', "'Be Vietnam Pro', sans-serif"],
             ['Tahoma', 'Tahoma, Geneva, sans-serif'],
             ['Verdana', 'Verdana, Geneva, sans-serif'],
             ['Times New Roman', "'Times New Roman', Times, serif"],
@@ -144,11 +143,11 @@ document.addEventListener('alpine:init', () => {
         lineHeights: ['1', '1.15', '1.5', '1.8', '2', '2.5'],
         palette: [
             '#000000', '#333333', '#555555', '#777777', '#999999', '#cccccc', '#eeeeee', '#ffffff',
-            '#d71920', '#e53935', '#f4511e', '#fb8c00', '#fdd835', '#43a047', '#00897b', '#039be5',
+            '#b3262d', '#e53935', '#f4511e', '#fb8c00', '#fdd835', '#43a047', '#00897b', '#039be5',
             '#1e88e5', '#3949ab', '#5e35b1', '#8e24aa', '#d81b60', '#6d4c41', '#fce4ec', '#fff8e1',
             '#e8f5e9', '#e3f2fd', '#ede7f6', '#fff3e0', '#e0f7fa', '#f3e5f5', '#ffebee', '#f1f8e9',
         ],
-        foreColor: '#d71920',
+        foreColor: '#b3262d',
         backColor: '#fdd835',
 
         init() {

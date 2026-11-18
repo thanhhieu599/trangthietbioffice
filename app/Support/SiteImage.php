@@ -48,6 +48,12 @@ class SiteImage
         return self::find('brands/'.$slug, ['png', 'webp', 'jpg', 'jpeg', 'svg']);
     }
 
+    /** Banner lớn đầu trang thương hiệu: public/images/brands/banners/{slug}.jpg|png|webp (tải lên tại Quản trị > Hình ảnh). */
+    public static function brandBanner(string $slug): ?string
+    {
+        return self::find('brands/banners/'.$slug, ['webp', 'jpg', 'jpeg', 'png']);
+    }
+
     /** Logo header: file public/images/logo.* hoặc biến SITE_LOGO. */
     public static function logo(): ?string
     {

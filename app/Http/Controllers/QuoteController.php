@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class QuoteController extends Controller
@@ -51,6 +52,7 @@ class QuoteController extends Controller
             'items' => ['nullable', 'array', 'max:200'],
             'items.*.sku' => ['required_with:items', 'string', 'max:100'],
             'items.*.quantity' => ['required_with:items', 'integer', 'min:1', 'max:1000000'],
+            'items.*.opts' => ['nullable', 'string', 'max:255'], // lựa chọn thuộc tính không có SKU riêng (VD "Màu sắc: Hồng")
             // Nghị định 13/2023/NĐ-CP: khách đồng ý cho xử lý thông tin cá nhân để giao hàng / báo giá.
             'consent' => ['accepted'],
         ], CustomerInfo::messages(), CustomerInfo::attributes() + ['note' => 'ghi chú', 'consent' => 'việc xử lý thông tin cá nhân']);
@@ -82,19 +84,20 @@ class QuoteController extends Controller
         $quote = DB::transaction(function () use ($data) {
             $quote = QuoteRequest::create($data);
 
-            $skus = collect($data['items'] ?? [])->pluck('sku');
-            $products = Product::whereIn('sku', $skus)->get()->keyBy('sku');
+            // SKU có thể là SKU chính hoặc SKU phiên bản (VD: EU366-HONG của sản phẩm Bút highlight EU366)
+            $resolved = Product::resolveSkus(collect($data['items'] ?? [])->pluck('sku')->all());
 
             foreach ($data['items'] ?? [] as $item) {
-                $product = $products->get($item['sku']);
+                [$product, $variant] = $resolved[mb_strtolower(trim($item['sku']))] ?? [null, null];
                 $flash = $product?->flashItem();
+                $label = collect([$variant ? Product::optionLabel($variant['options'] ?? []) : null, $item['opts'] ?? null])->filter()->implode(' · ');
                 $quote->items()->create([
                     'product_id' => $product?->id,
                     'sku' => $item['sku'],
-                    'name' => $product?->name ?? $item['sku'],
+                    'name' => Str::limit(($product?->name ?? $item['sku']).($label ? " ({$label})" : ''), 250, ''),
                     'quantity' => $item['quantity'],
-                    // Ghi lại giá lúc đặt (giá flash sale nếu đang chạy) để đơn / Sapo không lệch giá về sau.
-                    'unit_price' => $product?->currentPrice(),
+                    // Ghi lại giá lúc đặt (giá flash sale nếu đang chạy, giá riêng của phiên bản nếu có) để đơn / Sapo không lệch giá.
+                    'unit_price' => $flash ? $product->currentPrice() : (($variant['price'] ?? null) ?: $product?->currentPrice()),
                     'is_flash_sale' => (bool) $flash,
                 ]);
             }
@@ -130,15 +133,16 @@ class QuoteController extends Controller
     {
         $skus = array_slice((array) $request->query('skus', []), 0, 200);
 
-        return Product::active()
-            ->whereIn('sku', $skus)
-            ->get(['sku', 'name', 'slug', 'unit', 'images'])
-            ->map(fn (Product $p) => [
-                'sku' => $p->sku,
-                'name' => $p->name,
-                'unit' => $p->unit,
-                'url' => $p->url(),
-                'image' => $p->mainImage(),
-            ]);
+        // Trả theo đúng SKU khách đã thêm (SKU chính hoặc SKU phiên bản)
+        return collect(Product::resolveSkus($skus, activeOnly: true))
+            ->map(fn ($hit, $key) => [
+                'sku' => $hit[1]['sku'] ?? $hit[0]->sku,
+                'name' => $hit[0]->name,
+                'variant' => $hit[1] ? Product::optionLabel($hit[1]['options'] ?? []) : null,
+                'unit' => $hit[0]->unit,
+                'url' => $hit[0]->url(),
+                'image' => $hit[0]->mainImage(),
+            ])
+            ->values();
     }
 }

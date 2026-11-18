@@ -12,13 +12,19 @@ use Illuminate\Support\Facades\Http;
  *
  * Theo tài liệu chính thức (support.sapo.vn): /ung-dung-rieng-private-apps, /customer, /gioi-thieu-order-api,
  * /phuong-thuc-post-cua-order-phan-2, /phuong-thuc-get-cua-product.
- * CHƯA XÁC MINH được trong tài liệu: endpoint draft_orders, tìm khách theo email (customers/search.json).
+ * CHƯA XÁC MINH được trong tài liệu: endpoint draft_orders. Tìm khách: GET /customers.json?query= (đã thử trên cửa hàng thật).
  */
 class SapoClient
 {
     public function enabled(): bool
     {
         return filled(config('services.sapo.store')) && filled(config('services.sapo.key')) && filled(config('services.sapo.secret'));
+    }
+
+    /** Được phép GỬI dữ liệu lên Sapo (SAPO_SYNC_ENABLED, mặc định bật). Đọc dữ liệu không phụ thuộc công tắc này. */
+    public function canWrite(): bool
+    {
+        return $this->enabled() && (bool) config('services.sapo.sync', true);
     }
 
     public function baseUrl(): string
@@ -73,33 +79,109 @@ class SapoClient
         $payload = ['customer' => SapoPayload::customer($c)];
 
         if ($knownId) {
-            $r = $this->http()->put("/customers/{$knownId}.json", $payload);
+            $r = $this->sendTolerant('put', "/customers/{$knownId}.json", $payload);
             if ($r->status() !== 404) { // 404 = khách đã bị xóa bên Sapo -> tạo lại
                 return $this->ok($r, 'Cập nhật khách hàng')->json('customer');
             }
         }
 
-        if ($found = $this->findCustomerByEmail($c['email'])) {
-            return $this->ok($this->http()->put("/customers/{$found}.json", $payload), 'Cập nhật khách hàng')->json('customer');
+        // Nhận biết bằng SỐ ĐIỆN THOẠI (rồi mới tới email): khách đã có trên Sapo -> chỉ liên kết,
+        // KHÔNG tạo mới và KHÔNG ghi đè dữ liệu khách mà cửa hàng đã có bên Sapo.
+        if ($found = $this->findCustomer($c['email'] ?? null, $c['phone'] ?? null)) {
+            return ['id' => $found, 'linked' => true];
         }
 
-        return $this->ok($this->http()->post('/customers.json', $payload), 'Tạo khách hàng')->json('customer');
+        return $this->ok($this->sendTolerant('post', '/customers.json', $payload), 'Tạo khách hàng')->json('customer');
     }
 
-    /** Tìm khách theo email qua customers/search.json (KHÔNG có trong tài liệu Sapo: lỗi thì bỏ qua). */
-    public function findCustomerByEmail(string $email): ?int
+    /**
+     * Gửi lên Sapo; nếu Sapo từ chối (422) vì 1 trường cụ thể thì bỏ / chuyển trường đó rồi gửi lại (tối đa 3 lần):
+     *  - "Province is not supported": Sapo chưa nhận tên tỉnh/thành mới (34 tỉnh sau 2025) -> ghi tỉnh vào dòng địa chỉ 2.
+     *  - email "has already been taken": email thuộc khách khác -> gửi không kèm email (khách nhận biết bằng SĐT).
+     *  - "invalid phone format" ở địa chỉ -> bỏ SĐT trong địa chỉ (SĐT chính của khách vẫn giữ).
+     * Không áp dụng cho lỗi khác (vẫn báo lỗi để thử lại / xem trong trang Sapo).
+     */
+    private function sendTolerant(string $method, string $path, array $payload): Response
     {
-        try {
-            $r = $this->http()->get('/customers/search.json', ['query' => 'email:'.$email]);
-        } catch (\Throwable) {
-            return null;
+        // Chốt chặn cuối: mọi lệnh ghi (tạo/cập nhật khách, tạo đơn) đều đi qua đây
+        if (! $this->canWrite()) {
+            throw new SapoException('Đang tắt gửi dữ liệu lên Sapo (SAPO_SYNC_ENABLED=false)', 0, '');
         }
-        if (! $r->successful()) {
-            return null;
+
+        for ($i = 0; ; $i++) {
+            $r = $this->http()->{$method}($path, $payload);
+            $body = mb_strtolower($r->body());
+            if ($r->status() !== 422 || $i >= 3) {
+                return $r;
+            }
+            $before = $payload;
+            if (str_contains($body, 'province') && (str_contains($body, 'not supported') || str_contains($body, 'unsupported'))) {
+                $payload = self::provinceIntoAddressLine($payload);
+            }
+            if (str_contains($body, 'taken') && str_contains($body, '"email"')) {
+                array_walk($payload, function (&$root) {
+                    if (is_array($root)) {
+                        unset($root['email']);
+                    }
+                });
+            }
+            if (str_contains($body, 'invalid phone') && str_contains($body, 'addresses')) {
+                foreach ($payload as &$root) {
+                    foreach ($root['addresses'] ?? [] as $k => $a) {
+                        unset($root['addresses'][$k]['phone']);
+                    }
+                }
+                unset($root);
+            }
+            if ($payload === $before) {
+                return $r; // không biết sửa trường nào -> trả lỗi gốc
+            }
         }
-        foreach ((array) $r->json('customers', []) as $cust) {
-            if (strcasecmp((string) ($cust['email'] ?? ''), $email) === 0) {
-                return (int) $cust['id'];
+    }
+
+    /** Mọi địa chỉ trong payload: chuyển tỉnh/thành sang address2 ("Phường X, TP Hồ Chí Minh"), bỏ province/city. */
+    private static function provinceIntoAddressLine(array $data): array
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = self::provinceIntoAddressLine($value);
+            }
+        }
+        if (array_key_exists('province', $data) && ! is_array($data['province'])) {
+            $data['address2'] = collect([$data['address2'] ?? null, $data['province']])->filter()->unique()->implode(', ');
+            unset($data['province'], $data['city'], $data['province_code']);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Tìm khách trên Sapo theo SỐ ĐIỆN THOẠI trước, không thấy mới tìm theo email: GET /customers.json?query=...
+     * (đã kiểm tra trên cửa hàng thật; /customers/search.json bị Sapo chặn 403). Kết quả được so khớp lại cho chắc.
+     */
+    public function findCustomer(?string $email, ?string $phone = null): ?int
+    {
+        $digits = $phone ? preg_replace('/\D/', '', $phone) : '';
+        $tail = strlen($digits) >= 9 ? substr($digits, -9) : null; // 9 số cuối: khớp cả 0909… và +84909…
+
+        // Có SĐT: chỉ nhận biết theo SĐT (SĐT khác = khách khác, dù trùng email). Không có SĐT mới dùng email.
+        $term = $tail ? $digits : trim((string) $email);
+        if ($term !== '') {
+            try {
+                $r = $this->http()->get('/customers.json', ['query' => $term, 'limit' => 50]);
+            } catch (\Throwable) {
+                return null;
+            }
+            if (! $r->successful()) {
+                return null;
+            }
+            foreach ((array) $r->json('customers', []) as $cust) {
+                $match = $tail
+                    ? str_ends_with(preg_replace('/\D/', '', (string) ($cust['phone'] ?? '')), $tail)
+                    : strcasecmp(trim((string) ($cust['email'] ?? '')), $term) === 0;
+                if ($match) {
+                    return (int) $cust['id'];
+                }
             }
         }
 
@@ -112,7 +194,44 @@ class SapoClient
         $mode = config('services.sapo.order_mode') === 'draft_order' ? 'draft_order' : 'order';
         $path = $mode === 'draft_order' ? '/draft_orders.json' : '/orders.json';
 
-        return $this->ok($this->http()->post($path, [$mode => $order]), $mode === 'draft_order' ? 'Tạo đơn nháp' : 'Tạo đơn hàng')->json($mode);
+        return $this->ok($this->sendTolerant('post', $path, [$mode => $order]), $mode === 'draft_order' ? 'Tạo đơn nháp' : 'Tạo đơn hàng')->json($mode);
+    }
+
+    /** Danh mục (custom collection) trên Sapo Web: [['id','title','alias','products_count'], ...]. */
+    public function collections(): array
+    {
+        $all = [];
+        for ($page = 1; $page <= 40; $page++) {
+            $list = $this->ok($this->http()->get('/custom_collections.json', ['limit' => 250, 'page' => $page]), 'Đọc danh mục')
+                ->json('custom_collections', []);
+            $all = array_merge($all, $list);
+            if (count($list) < 250) {
+                break;
+            }
+        }
+
+        return $all;
+    }
+
+    /** Duyệt sản phẩm (đủ thông tin: ảnh, phiên bản, nội dung) của một danh mục Sapo. */
+    public function eachProductInCollection(int $collectionId, callable $fn): int
+    {
+        $count = 0;
+        for ($page = 1; $page <= 100; $page++) {
+            $products = $this->ok(
+                $this->http()->get('/products.json', ['collection_id' => $collectionId, 'limit' => 250, 'page' => $page]),
+                'Đọc sản phẩm của danh mục'
+            )->json('products', []);
+            foreach ($products as $p) {
+                $fn($p);
+                $count++;
+            }
+            if (count($products) < 250) {
+                break;
+            }
+        }
+
+        return $count;
     }
 
     /** Duyệt toàn bộ sản phẩm (250/trang) để lấy SKU của từng phiên bản. */

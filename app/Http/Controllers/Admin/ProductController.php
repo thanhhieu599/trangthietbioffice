@@ -106,6 +106,9 @@ class ProductController extends Controller
             'brand' => ['nullable', 'string', 'max:255'],
             'unit' => ['nullable', 'string', 'max:50'],
             'pack_size' => ['nullable', 'string', 'max:255'],
+            'attrs' => ['nullable', 'array', 'max:10'],
+            'attrs.*.name' => ['nullable', 'string', 'max:50'],
+            'attrs.*.values' => ['nullable', 'string', 'max:1000'],
             'price' => ['nullable', 'integer', 'min:0'],
             'compare_price' => ['nullable', 'integer', 'min:0'],
             'min_order_qty' => ['nullable', 'integer', 'min:1', 'max:100000'],
@@ -137,6 +140,14 @@ class ProductController extends Controller
             'brand' => $data['brand'] ?? null,
             'unit' => $data['unit'] ?? null,
             'pack_size' => $data['pack_size'] ?? null,
+            // Thuộc tính: "Màu sắc" = "Đen, Đỏ, Xanh" -> ['name' => 'Màu sắc', 'values' => ['Đen', 'Đỏ', 'Xanh']]
+            'attrs' => collect($data['attrs'] ?? [])
+                ->map(fn ($a) => [
+                    'name' => trim((string) ($a['name'] ?? '')),
+                    'values' => collect(preg_split('/\s*[,;\n]\s*/u', (string) ($a['values'] ?? '')))->map(fn ($v) => trim($v))->filter()->unique()->values()->all(),
+                ])
+                ->filter(fn ($a) => $a['name'] !== '' && $a['values'])
+                ->values()->all() ?: null,
             'price' => $data['price'] ?? null,
             'compare_price' => $data['compare_price'] ?? null,
             'min_order_qty' => $data['min_order_qty'] ?? 1,

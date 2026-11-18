@@ -6,12 +6,15 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\CommentController as AdminCommentController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\FlashSaleController as AdminFlashSaleController;
+use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\SapoController as AdminSapoController;
 use App\Http\Controllers\Account\AccountController;
 use App\Http\Controllers\Account\AuthController as AccountAuthController;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FlashSaleController;
 use App\Http\Middleware\AdminAuth;
 use App\Http\Controllers\PageController;
@@ -25,6 +28,7 @@ Route::get('/', [CatalogController::class, 'home'])->name('home');
 Route::get('/danh-muc/{category}', [CatalogController::class, 'category'])->name('categories.show');
 Route::get('/san-pham/{product}', [CatalogController::class, 'product'])->name('products.show');
 Route::get('/tim-kiem', [CatalogController::class, 'search'])->name('search');
+Route::get('/api/goi-y-tim-kiem', [CatalogController::class, 'suggest'])->middleware('throttle:90,1')->name('search.suggest');
 
 Route::get('/thuong-hieu', [CatalogController::class, 'brandIndex'])->name('brands.index');
 Route::get('/thuong-hieu/{slug}', [CatalogController::class, 'brandShow'])->name('brands.show');
@@ -37,7 +41,8 @@ Route::post('/tin-tuc/{post}/binh-luan', [PostController::class, 'comment'])->mi
 Route::permanentRedirect('/kien-thuc', '/tin-tuc');
 Route::get('/kien-thuc/{slug}', fn (string $slug) => redirect()->route('posts.show', $slug, 301));
 
-Route::view('/lien-he', 'pages.contact')->name('contact');
+Route::get('/lien-he', [ContactController::class, 'show'])->name('contact');
+Route::post('/lien-he', [ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
 Route::get('/trang/{page}', [PageController::class, 'show'])->name('pages.show');
 
 Route::get('/bao-gia', [QuoteController::class, 'create'])->name('quote.create');
@@ -107,6 +112,11 @@ Route::prefix('quan-tri')->name('admin.')->group(function () {
         Route::post('/binh-luan/{comment}/duyet', [AdminCommentController::class, 'approve'])->name('comments.approve');
         Route::post('/binh-luan/{comment}/xoa', [AdminCommentController::class, 'destroy'])->name('comments.destroy');
 
+        // Liên hệ: tin nhắn khách gửi + ảnh trang Liên hệ
+        Route::get('/lien-he', [AdminContactController::class, 'index'])->name('contacts.index');
+        Route::post('/lien-he/{message}/da-xu-ly', [AdminContactController::class, 'toggleRead'])->name('contacts.read');
+        Route::post('/lien-he/{message}/xoa', [AdminContactController::class, 'destroy'])->name('contacts.destroy');
+
         // Flash Sale
         Route::get('/flash-sale', [AdminFlashSaleController::class, 'index'])->name('flash-sales.index');
         Route::get('/flash-sale/them', [AdminFlashSaleController::class, 'create'])->name('flash-sales.create');
@@ -126,6 +136,15 @@ Route::prefix('quan-tri')->name('admin.')->group(function () {
         Route::get('/chuyen-huong', [AdminDashboardController::class, 'redirects'])->name('redirects.index');
         Route::post('/chuyen-huong', [AdminDashboardController::class, 'storeRedirect'])->name('redirects.store');
         Route::post('/chuyen-huong/{redirect}/xoa', [AdminDashboardController::class, 'destroyRedirect'])->name('redirects.destroy');
+
+        // Hình ảnh: mọi banner trên website (tab Trang chủ = banners.index)
+        Route::get('/hinh-anh/danh-muc', [AdminMediaController::class, 'categories'])->name('media.categories');
+        Route::post('/hinh-anh/danh-muc/{category:id}/{slot}', [AdminMediaController::class, 'updateCategory'])->name('media.category');
+        Route::get('/hinh-anh/flash-sale', [AdminMediaController::class, 'flash'])->name('media.flash');
+        Route::post('/hinh-anh/flash-sale/{flashSale}/{slot}', [AdminMediaController::class, 'updateFlash'])->name('media.flash.update');
+        Route::get('/hinh-anh/lien-he', [AdminMediaController::class, 'contact'])->name('media.contact');
+        Route::get('/hinh-anh/thuong-hieu', [AdminMediaController::class, 'brands'])->name('media.brands');
+        Route::post('/hinh-anh/thuong-hieu/{slug}', [AdminMediaController::class, 'updateBrand'])->name('media.brand');
 
         Route::get('/banner', [AdminBannerController::class, 'index'])->name('banners.index');
         Route::post('/banner', [AdminBannerController::class, 'store'])->name('banners.store');

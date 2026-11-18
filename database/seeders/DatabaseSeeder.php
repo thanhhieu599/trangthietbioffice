@@ -88,12 +88,15 @@ class DatabaseSeeder extends Seeder
             $category = Category::where('slug', $slug)->first();
             foreach ($items as [$name, $brand, $unit, $price, $compare]) {
                 $sku = 'DEMO-'.str_pad((string) ++$i, 3, '0', STR_PAD_LEFT);
+                $slug = Str::slug($name); // slug giữ theo tên đầy đủ (trùng link đã có)
+                [$name, $pack] = Product::splitUnitSuffix($name, $unit); // "– ram 500 tờ" -> ĐVT/quy cách
                 Product::updateOrCreate(['sku' => $sku], [
                     'category_id' => $category?->id,
                     'name' => $name,
-                    'slug' => Str::slug($name),
+                    'slug' => $slug,
                     'brand' => $brand,
                     'unit' => $unit,
+                    'pack_size' => $pack,
                     'price' => $price,
                     'compare_price' => $compare,
                     'short_description' => "{$name}. Báo giá sỉ theo số lượng cho doanh nghiệp, giao định kỳ, hóa đơn VAT.",

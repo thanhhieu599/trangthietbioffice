@@ -7,7 +7,6 @@
 <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
         <h1 class="adm-h1">Tổng quan</h1>
-        <p class="adm-sub">Tình hình nội dung website hôm nay, {{ now()->format('d/m/Y') }}.</p>
     </div>
     <div class="flex flex-wrap gap-2">
         <a href="{{ route('admin.categories.create') }}" class="adm-btn adm-btn-ghost">+ Danh mục</a>
@@ -51,7 +50,6 @@
     {{-- Việc cần làm SEO --}}
     <section class="adm-card p-5">
         <h2 class="font-semibold text-adm-ink">Việc cần làm để tối ưu SEO</h2>
-        <p class="text-xs text-slate-500">Các nội dung đang hiển thị còn thiếu sót, nhiều lỗi nhất xếp trước. Bấm vào để sửa.</p>
 
         @foreach ([['Bài viết', $postTodo], ['Sản phẩm', $productTodo], ['Danh mục', $categoryTodo]] as [$label, $list])
             <div x-data="{ all: false }" class="mt-4">

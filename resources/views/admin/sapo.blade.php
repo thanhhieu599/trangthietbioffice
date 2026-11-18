@@ -7,7 +7,6 @@
 <div class="flex flex-wrap items-end justify-between gap-4">
     <div>
         <h1 class="adm-h1">Đồng bộ Sapo</h1>
-        <p class="adm-sub">Khách đăng ký và đơn đặt hàng trên website tự chuyển sang Sapo (chạy ngầm, tự thử lại khi lỗi).</p>
     </div>
     @if ($enabled)
         <div class="flex flex-wrap gap-2">
@@ -16,6 +15,14 @@
         </div>
     @endif
 </div>
+
+@if ($enabled && ! config('services.sapo.sync', true))
+    <div class="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <span class="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500"></span>
+        <p><strong>Đang tắt gửi lên Sapo.</strong> Đơn hàng và tài khoản mới chỉ lưu trên web, không chuyển sang Sapo. Kéo sản phẩm, ghép SKU vẫn hoạt động.
+            Bật lại: đặt <code>SAPO_SYNC_ENABLED=true</code> trong .env rồi chạy <code>php artisan config:clear</code>.</p>
+    </div>
+@endif
 
 @if (! $enabled)
     <section class="adm-card mt-6 p-5">
@@ -32,7 +39,6 @@ SAPO_ORDER_MODE=order        # hoặc draft_order (đơn nháp)</pre>
             <li>Chạy <code>php artisan config:clear</code> (hoặc <code>config:cache</code>), rồi <code>php artisan sapo:run check</code>.</li>
             <li>Bật cron mỗi phút: <code>php artisan schedule:run</code> (chạy hàng đợi gửi Sapo và ghép SKU hằng đêm).</li>
         </ol>
-        <p class="mt-3 text-xs text-adm-muted">Không gửi khóa API qua chat / email, không đưa file .env lên git.</p>
     </section>
 @else
     @php

@@ -19,5 +19,4 @@
         <button class="adm-btn adm-btn-primary w-full py-2.5">Đăng nhập</button>
     </form>
 </div>
-<p class="mt-6 text-center text-xs text-slate-500">Khu vực dành riêng cho quản trị viên.</p>
 @endsection

@@ -5,12 +5,12 @@ $pct = $item->soldPercent();
 $hot = $item->quantity_limit && $pct >= 80;
 @endphp
 <article
-    class="group relative flex h-full flex-col rounded-xl bg-white p-2.5 shadow-[0_1px_3px_rgba(0,0,0,.08)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-8px_rgba(215,25,32,.35)]">
+    class="group relative flex h-full flex-col rounded-xl bg-white p-2.5 shadow-[0_1px_3px_rgba(0,0,0,.08)]">
     <a href="{{ $p->url() }}" class="relative block aspect-square overflow-hidden rounded-lg bg-neutral-50"
         tabindex="-1" aria-label="{{ $p->name }}">
         @if ($img = $p->mainImage())
         <img src="{{ $img }}" alt="{{ $p->name }}" width="300" height="300" loading="lazy" decoding="async"
-            class="h-full w-full object-contain p-2 transition duration-300 group-hover:scale-105">
+            class="h-full w-full object-contain p-2">
         @else
         <span class="flex h-full items-center justify-center text-neutral-300">
             <x-icon name="image" class="h-12 w-12" />
@@ -24,17 +24,32 @@ $hot = $item->quantity_limit && $pct >= 80;
         </span>
     </a>
 
-    <h3 class="mt-2.5 line-clamp-2 min-h-[2.6rem] text-[14px] leading-snug text-ink-800">
-        <a href="{{ $p->url() }}" class="hover:text-primary-600">{{ $p->name }}</a>
+    <h3 class="mt-2.5 line-clamp-2 min-h-[2.6em] text-[14px] leading-[1.3] font-semibold text-ink-900">
+        <a href="{{ $p->url() }}">{{ $p->name }}</a>
     </h3>
 
-    <div class="mt-1.5 flex flex-wrap items-baseline gap-x-2">
-        <span
-            class="text-[17px] font-bold text-primary-600">{{ \App\Models\Product::money((int) $item->sale_price) }}</span>
-        <span class="text-xs text-neutral-400 line-through">{{ \App\Models\Product::money((int) $p->price) }}</span>
+    <div class="mt-1.5 flex items-center gap-2" x-data="{ added: false }">
+        <div class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
+            <span class="text-[17px] leading-tight font-bold text-primary-600">{{ \App\Models\Product::money((int) $item->sale_price) }}</span>
+            <span class="text-[12.5px] text-neutral-400 line-through">{{ \App\Models\Product::money((int) $p->price) }}</span>
+        </div>
+        @if ($p->attrList())
+            {{-- Có màu sắc / phân loại: mở trang sản phẩm để chọn --}}
+            <a href="{{ $p->url() }}" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-600 text-white transition hover:bg-primary-700"
+               title="Chọn phân loại" aria-label="Chọn phân loại {{ $p->name }}"><x-icon name="cart" class="h-[18px] w-[18px]" /></a>
+        @else
+            {{-- Icon thêm vào giỏ hàng (số lượng tối thiểu) --}}
+            <button type="button" @click="$store.quote.add(@js($p->sku), {{ max(1, (int) $p->min_order_qty) }}); added = true; setTimeout(() => added = false, 1500)"
+                    :class="added ? 'bg-green-600' : 'bg-primary-600 hover:bg-primary-700'"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-600 text-white transition"
+                    title="Thêm vào giỏ hàng" aria-label="Thêm {{ $p->name }} vào giỏ hàng">
+                <x-icon name="cart" class="h-[18px] w-[18px]" x-show="!added" />
+                <x-icon name="check-circle" class="h-[18px] w-[18px]" x-show="added" x-cloak />
+            </button>
+        @endif
     </div>
 
-    <div class="relative mt-auto h-[18px] overflow-hidden rounded-full bg-[#ffe1db]" title="{{ $item->soldLabel() }}">
+    <div class="relative mt-2.5 h-[18px] overflow-hidden rounded-full bg-[#ffe1db]" title="{{ $item->soldLabel() }}">
         {{-- Dùng @style (không viết style="...{{ }}..."): tránh VS Code báo lỗi CSS giả và formatter làm hỏng --}}
         <div class="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#ff9a3c] to-primary-600"
             @style(['width: '.$pct.'%'])></div>

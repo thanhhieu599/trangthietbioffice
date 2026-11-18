@@ -34,18 +34,20 @@
                 </template>
 
                 <ul class="divide-y divide-neutral-100">
-                    <template x-for="(item, idx) in $store.quote.items" :key="item.sku">
+                    <template x-for="(item, idx) in $store.quote.items" :key="$store.quote.key(item)">
                         <li class="flex items-center gap-3 py-3">
                             <img :src="details[item.sku]?.image || ''" x-show="details[item.sku]?.image" alt="" class="h-12 w-12 rounded object-contain">
                             <div class="min-w-0 flex-1">
                                 <a :href="details[item.sku]?.url" class="block truncate text-sm font-medium text-ink-900 hover:text-primary-600" x-text="details[item.sku]?.name || item.sku"></a>
-                                <p class="text-xs text-neutral-500">Mã: <span x-text="item.sku"></span></p>
+                                <p class="text-xs text-neutral-500">Mã: <span x-text="item.sku"></span>
+                                    <template x-if="details[item.sku]?.variant || item.opts"><span> · <span x-text="[details[item.sku]?.variant, item.opts].filter(Boolean).join(' · ')"></span></span></template></p>
                             </div>
                             <input type="hidden" :name="`items[${idx}][sku]`" :value="item.sku">
+                            <input type="hidden" :name="`items[${idx}][opts]`" :value="item.opts || ''">
                             <input type="number" min="1" :name="`items[${idx}][quantity]`" :value="item.qty"
-                                   @change="$store.quote.setQty(item.sku, $event.target.value)" class="w-20 rounded border border-neutral-300 px-2 py-1 text-sm" aria-label="Số lượng">
+                                   @change="$store.quote.setQty($store.quote.key(item), $event.target.value)" class="w-20 rounded border border-neutral-300 px-2 py-1 text-sm" aria-label="Số lượng">
                             <span class="w-12 text-xs text-neutral-500" x-text="details[item.sku]?.unit || ''"></span>
-                            <button type="button" @click="$store.quote.remove(item.sku)" class="text-sm text-red-600 hover:underline">Xóa</button>
+                            <button type="button" @click="$store.quote.remove($store.quote.key(item))" class="text-sm text-red-600 hover:underline">Xóa</button>
                         </li>
                     </template>
                 </ul>
@@ -67,7 +69,6 @@
                         <a href="{{ route('login', ['quay-lai' => '/bao-gia']) }}" class="font-semibold text-primary-600 hover:underline">Đăng nhập</a>
                         <a href="{{ route('register', ['quay-lai' => '/bao-gia']) }}" class="font-semibold text-primary-600 hover:underline">Đăng ký</a>
                     </div>
-                    <p class="mb-4 text-sm text-neutral-600">Không cần tài khoản: chỉ cần điền đầy đủ thông tin bên dưới để chúng tôi giao hàng. Ô có dấu <span class="text-primary-600">*</span> là bắt buộc.</p>
                 @endguest
 
                 @include('partials.customer-fields', ['v' => $prefill, 'nameField' => 'contact_name'])
@@ -85,15 +86,6 @@
         <aside class="space-y-4 rounded-md bg-white p-5 lg:sticky lg:top-4">
             <h2 class="text-lg font-semibold text-ink-900">3. Xác nhận đơn</h2>
             <p class="flex justify-between text-sm"><span class="text-neutral-600">Số mã sản phẩm</span><strong x-text="$store.quote.count">0</strong></p>
-            <div>
-                <label for="frequency" class="mb-1 block text-sm font-medium text-ink-800">Nhu cầu mua</label>
-                <select id="frequency" name="frequency" class="{{ $input }}">
-                    <option value="">Chọn (không bắt buộc)</option>
-                    <option value="once" @selected(old('frequency') === 'once')>Mua một lần</option>
-                    <option value="monthly" @selected(old('frequency') === 'monthly')>Định kỳ hàng tháng</option>
-                    <option value="quarterly" @selected(old('frequency') === 'quarterly')>Định kỳ hàng quý</option>
-                </select>
-            </div>
             <div>
                 <label for="note" class="mb-1 block text-sm font-medium text-ink-800">Ghi chú</label>
                 <textarea id="note" name="note" rows="4" placeholder="Danh mục cần mua thêm, quy cách, thời gian giao mong muốn…" class="{{ $input }} {{ $errors->has('note') ? 'border-red-400' : '' }}">{{ old('note') }}</textarea>

@@ -100,7 +100,6 @@
         <div x-show="!rows.length" class="mt-4 rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-adm-muted">
             Chưa có sản phẩm. Gõ tên hoặc mã sản phẩm vào ô tìm kiếm phía trên để thêm.
         </div>
-        <p class="mt-3 text-xs text-adm-muted">“Số suất” để trống = không giới hạn. Có số suất thì thanh “Đã bán” hiện tỉ lệ và báo “Sắp hết” khi bán được 80%. Số đã bán tính từ đơn đặt thật trong thời gian chương trình.</p>
     </section>
 
     {{-- ===== Thiết lập ===== --}}
@@ -124,14 +123,13 @@
             </label>
             <label class="mt-2 flex items-start gap-2 text-sm">
                 <input type="checkbox" name="auto_renew" value="1" @checked(old('auto_renew', $sale->auto_renew)) class="mt-0.5 h-4 w-4 accent-primary-600">
-                <span>Tự lặp lại khi hết giờ<span class="block text-xs text-adm-muted">Hết giờ thì tự bắt đầu chu kỳ mới cùng độ dài (VD: 24h mỗi ngày); đồng hồ trên web tự đếm lại, “Đã bán” tính lại từ đầu.</span></span>
+                <span>Tự lặp lại khi hết giờ</span>
             </label>
             <button class="adm-btn adm-btn-primary mt-4 w-full">{{ $sale->exists ? 'Lưu chương trình' : 'Tạo chương trình' }}</button>
         </section>
 
         <section class="adm-card p-5">
             <h2 class="font-semibold text-adm-ink">Banner trang Flash Sale</h2>
-            <p class="mt-1 text-xs text-adm-muted">Không bắt buộc – để trống thì trang dùng banner thiết kế sẵn có đồng hồ đếm ngược. JPG/PNG/WebP, tối đa 3 MB.</p>
             @foreach (['banner' => 'Máy tính – 1200 × 300 px', 'banner_mobile' => 'Điện thoại – 800 × 400 px'] as $field => $label)
                 <div class="mt-3">
                     <span class="mb-1 block text-sm font-medium">{{ $label }}</span>

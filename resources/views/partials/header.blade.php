@@ -4,6 +4,7 @@
     $tel = $phone ? preg_replace('/[^0-9+]/', '', $phone) : null;
     $nav = [
         ['label' => 'Trang chủ', 'url' => route('home'), 'active' => $isHome],
+        ['label' => 'Khuyến mãi', 'url' => route('flash-sale'), 'active' => request()->routeIs('flash-sale')],
         ['label' => 'Tin tức', 'url' => route('posts.index'), 'active' => request()->routeIs('posts.*')],
         ['label' => 'Thương hiệu', 'url' => route('brands.index'), 'active' => request()->routeIs('brands.*')],
         ['label' => 'Liên hệ', 'url' => route('contact'), 'active' => request()->routeIs('contact')],
@@ -31,14 +32,7 @@
                 @endif
             </a>
 
-            <form action="{{ route('search') }}" method="get" role="search" class="hidden flex-1 md:flex">
-                <label for="q" class="sr-only">Tìm sản phẩm</label>
-                <input id="q" name="q" type="search" value="{{ request('q') }}" placeholder="Bạn tìm giấy in, bút, bìa hồ sơ, băng keo…"
-                       class="min-w-0 flex-1 rounded-l-md border border-r-0 border-neutral-300 px-4 py-2.5 text-sm focus:border-primary-600 focus:outline-none">
-                <button type="submit" class="rounded-r-md bg-primary-600 px-5 text-white hover:bg-primary-700" aria-label="Tìm kiếm">
-                    <x-icon name="search" />
-                </button>
-            </form>
+            @include('partials.search-box')
 
             <div class="ml-auto flex items-center gap-5 md:ml-0">
                 @if ($phone)
@@ -96,14 +90,10 @@
             </div>
         </div>
 
-        <form action="{{ route('search') }}" method="get" role="search" class="flex px-4 pb-3 md:hidden">
-            <input name="q" type="search" value="{{ request('q') }}" placeholder="Bạn tìm sản phẩm gì?"
-                   class="min-w-0 flex-1 rounded-l-md border border-r-0 border-neutral-300 px-3 py-2 text-sm focus:outline-none">
-            <button type="submit" class="rounded-r-md bg-primary-600 px-4 text-white" aria-label="Tìm kiếm"><x-icon name="search" /></button>
-        </form>
+        @include('partials.search-box', ['mobile' => true])
     </div>
 
-    {{-- ===== Hàng 2: thanh menu chính màu đỏ ===== --}}
+    {{-- ===== Hàng 2: thanh menu chính màu đỏ, nút danh mục màu đen ===== --}}
     <nav class="bg-primary-600 text-white" aria-label="Menu chính">
         <div class="relative mx-auto flex max-w-site items-stretch px-4">
             {{-- Nút Danh mục sản phẩm (máy tính): mọi trang đều đóng sẵn, chỉ thả xuống khi bấm. --}}
@@ -143,7 +133,7 @@
                 @foreach ($nav as $item)
                     <li class="shrink-0">
                         <a href="{{ $item['url'] }}" @if ($item['active']) aria-current="page" @endif
-                           class="flex h-full items-center px-3 py-3 uppercase tracking-wide hover:bg-primary-700 sm:px-4 {{ $item['active'] ? 'bg-primary-700' : '' }}">
+                           class="flex h-full items-center px-3 py-3 uppercase tracking-wide transition hover:bg-primary-700 sm:px-4 {{ $item['active'] ? 'bg-primary-800' : '' }}">
                             {{ $item['label'] }}
                         </a>
                     </li>

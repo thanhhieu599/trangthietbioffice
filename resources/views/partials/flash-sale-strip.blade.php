@@ -4,7 +4,7 @@
 --}}
 @php($items = $flash['items']->take(15))
 <section aria-labelledby="flash-sale-title"
-         class="relative overflow-hidden rounded-xl bg-[linear-gradient(120deg,#c8141b_0%,#e3262d_45%,#ff5a3c_100%)] p-3 shadow-[0_8px_30px_-12px_rgba(215,25,32,.55)] sm:p-4"
+         class="relative overflow-hidden rounded-xl bg-[linear-gradient(120deg,#8f1d22_0%,#b3262d_50%,#d9573a_100%)] p-3 shadow-[0_8px_30px_-12px_rgba(179,38,45,.55)] sm:p-4"
          x-data="countdown(@js($flash['sale']->ends_at->toIso8601String()), {{ $flash['sale']->cycleSeconds() }})" x-show="!done" x-transition.opacity>
 
     {{-- Họa tiết tia sét mờ + quầng sáng (trang trí) --}}

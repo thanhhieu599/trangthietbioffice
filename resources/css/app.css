@@ -1,9 +1,4 @@
-/* Font tự lưu trên máy chủ (không gọi Google Fonts) -> tải nhanh, không phụ thuộc bên thứ ba */
-@import '@fontsource/be-vietnam-pro/400.css';
-@import '@fontsource/be-vietnam-pro/500.css';
-@import '@fontsource/be-vietnam-pro/600.css';
-@import '@fontsource/be-vietnam-pro/700.css';
-/* Font trang quản trị (Roboto, có tiếng Việt). Trình duyệt chỉ tải khi trang quản trị dùng tới. */
+/* Font Roboto (có đủ dấu tiếng Việt) cho cả website và trang quản trị – tự lưu trên máy chủ, không gọi Google Fonts */
 @import '@fontsource-variable/roboto';
 @import 'tailwindcss';
 
@@ -11,21 +6,30 @@
 @source '../../storage/framework/views/*.php';
 
 /*
- * Bảng màu thương hiệu: ĐỎ – ĐEN – TRẮNG (đồng bộ trangthietbi.vn).
- * Muốn đổi tông đỏ, chỉ sửa các biến --color-primary-* bên dưới.
+ * Bảng màu: ĐỎ TRẦM (nhấn: nút, giá, điểm nhấn) + XANH THAN (mảng lớn: thanh menu, footer) + nền xám ấm.
+ * Đỏ đã hạ độ chói (từ #d71920) để nhìn lâu không mỏi mắt mà vẫn giữ nhận diện đỏ của trangthietbi.vn.
+ * Muốn đổi tông, chỉ sửa các biến bên dưới.
  */
 @theme {
-    --font-sans: 'Be Vietnam Pro', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Roboto Variable', Roboto, ui-sans-serif, system-ui, sans-serif;
 
-    --color-primary-50: #fef2f2;
-    --color-primary-100: #fde4e4;
-    --color-primary-600: #d71920;
-    --color-primary-700: #b5141a;
-    --color-primary-800: #8e1014;
+    --color-primary-50: #fbf3f3;
+    --color-primary-100: #f6e2e2;
+    --color-primary-200: #ecc3c4;
+    --color-primary-500: #c43a3f;
+    --color-primary-600: #b3262d;
+    --color-primary-700: #961e24;
+    --color-primary-800: #74181d;
 
-    --color-ink-700: #333333;
-    --color-ink-800: #222222;
-    --color-ink-900: #141414;
+    /* Xanh than: thanh menu, footer, khối nền tối */
+    --color-navy-600: #2e3d55;
+    --color-navy-700: #243247;
+    --color-navy-800: #1b263a;
+    --color-navy-900: #121b2b;
+
+    --color-ink-700: #344054;
+    --color-ink-800: #1f2937;
+    --color-ink-900: #111827;
 
     --container-site: 1240px;
 }
@@ -70,7 +74,7 @@
  * Tông xanh than + trắng, đỏ thương hiệu chỉ dùng làm điểm nhấn.
  * ===================================================================== */
 @theme {
-    --font-admin: 'Roboto Variable', Roboto, ui-sans-serif, system-ui, sans-serif;
+    --font-admin: var(--font-sans); /* cùng font với website */
     --color-adm-bg: #f3f5f8;
     --color-adm-line: #e4e7ec;
     --color-adm-ink: #0f172a;
@@ -97,7 +101,7 @@
         @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap
             transition focus:outline-none focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-60;
     }
-    .adm-btn-primary { @apply bg-primary-600 text-white shadow-[0_1px_2px_rgba(215,25,32,0.25)] hover:bg-primary-700 focus-visible:ring-primary-600/20; }
+    .adm-btn-primary { @apply bg-primary-600 text-white shadow-[0_1px_2px_rgba(179,38,45,0.25)] hover:bg-primary-700 focus-visible:ring-primary-600/20; }
     .adm-btn-dark { @apply bg-adm-ink text-white hover:bg-slate-800 focus-visible:ring-slate-900/20; }
     .adm-btn-ghost { @apply border border-adm-line bg-white text-slate-700 shadow-[0_1px_2px_rgba(16,24,40,0.04)] hover:border-slate-300 hover:bg-slate-50; }
 

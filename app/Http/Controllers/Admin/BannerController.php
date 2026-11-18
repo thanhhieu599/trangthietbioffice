@@ -36,17 +36,17 @@ class BannerController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $position = in_array($request->input('position'), array_keys(Banner::POSITIONS), true) ? $request->input('position') : 'slider';
-        $minWidth = Banner::POSITIONS[$position]['minWidth'];
+        $position = in_array($request->input('position'), array_keys(Banner::allPositions()), true) ? $request->input('position') : 'slider';
+        $minWidth = Banner::allPositions()[$position]['minWidth'];
 
         $data = $request->validate([
-            'position' => ['required', Rule::in(array_keys(Banner::POSITIONS))],
+            'position' => ['required', Rule::in(array_keys(Banner::allPositions()))],
             'image' => ['required', ...self::IMAGE, 'dimensions:min_width='.$minWidth],
             'image_mobile' => ['nullable', ...self::IMAGE],
             'title' => ['nullable', 'string', 'max:255'],
             'link' => self::LINK,
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
-        ], $this->messages() + ['image.dimensions' => "Ảnh quá nhỏ: chiều ngang tối thiểu {$minWidth} px (khuyến nghị ".Banner::POSITIONS[$position]['size'].' px).']);
+        ], $this->messages() + ['image.dimensions' => "Ảnh quá nhỏ: chiều ngang tối thiểu {$minWidth} px (khuyến nghị ".Banner::allPositions()[$position]['size'].' px).']);
 
         Banner::create([
             'position' => $data['position'],
@@ -58,13 +58,13 @@ class BannerController extends Controller
             'is_active' => true,
         ]);
 
-        return back()->with('ok', 'Đã thêm '.mb_strtolower(Banner::POSITIONS[$data['position']]['label']).'.');
+        return back()->with('ok', 'Đã thêm '.mb_strtolower(Banner::allPositions()[$data['position']]['label']).'.');
     }
 
     public function update(Request $request, Banner $banner): RedirectResponse
     {
         $data = $request->validate([
-            'position' => ['required', Rule::in(array_keys(Banner::POSITIONS))],
+            'position' => ['required', Rule::in(array_keys(Banner::allPositions()))],
             'title' => ['nullable', 'string', 'max:255'],
             'link' => self::LINK,
             'sort_order' => ['required', 'integer', 'min:0', 'max:999'],

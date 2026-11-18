@@ -79,7 +79,6 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="font-semibold text-adm-ink">Câu hỏi thường gặp (FAQ)</h2>
-                    <p class="text-xs text-slate-500">Hiện cuối bài và gửi cho Google dạng dữ liệu có cấu trúc FAQPage.</p>
                 </div>
                 <button type="button" @click="rows.push({ q: '', a: '' })" class="adm-btn adm-btn-ghost">+ Thêm câu hỏi</button>
             </div>
@@ -157,7 +156,6 @@
                     </div>
                 </template>
             </div>
-            <p class="mt-2 text-xs text-slate-500">JPG, PNG, WebP · tối đa 3 MB · khuyến nghị 1200 × 630 px (hiện đẹp khi chia sẻ Facebook/Zalo).</p>
         </section>
 
         @include('admin.partials.seo-panel')

@@ -15,6 +15,7 @@
         $drafts = \App\Models\Post::whereNull('published_at')->count();
         $runningFlash = \App\Models\FlashSale::running()->exists();
         $pendingComments = \App\Models\PostComment::where('is_approved', false)->count();
+        $newContacts = \App\Models\ContactMessage::where('is_read', false)->count();
         $menu = [
             'Tổng quan' => [
                 ['admin.dashboard', 'admin.dashboard', 'Tổng quan', 'home', null],
@@ -22,11 +23,19 @@
             'Nội dung' => [
                 ['admin.posts.index', 'admin.posts.*', 'Bài viết', 'document', $drafts ?: null],
                 ['admin.comments.index', 'admin.comments.*', 'Bình luận', 'chat', $pendingComments ?: null],
+                ['admin.contacts.index', 'admin.contacts.*', 'Liên hệ', 'mail', $newContacts ?: null],
             ],
             'Sản phẩm' => [
                 ['admin.products.index', 'admin.products.*', 'Sản phẩm', 'box', null],
                 ['admin.categories.index', 'admin.categories.*', 'Danh mục', 'grid', null],
                 ['admin.flash-sales.index', 'admin.flash-sales.*', 'Flash Sale', 'bolt', $runningFlash ? 'ON' : null],
+            ],
+            'Giao diện' => [
+                ['admin.banners.index', ['admin.banners.*', 'admin.media.*'], 'Hình ảnh', 'image', null],
+            ],
+            'Hệ thống' => [
+                ['admin.redirects.index', 'admin.redirects.*', 'Chuyển hướng 301', 'redirect', null],
+                ['admin.sapo.index', 'admin.sapo.*', 'Đồng bộ Sapo', 'sync', null],
             ],
         ];
         $icons = [
@@ -35,6 +44,10 @@
             'box' => '<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/>',
             'grid' => '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
             'chat' => '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14.5h4"/>',
+            'image' => '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.8"/><path d="m21 16-5.5-5.5L6 20"/>',
+            'redirect' => '<path d="M4 7h11a5 5 0 0 1 0 10H9"/><path d="m8 3-4 4 4 4"/>',
+            'sync' => '<path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16m0 4v-4h-4"/>',
+            'mail' =>'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
             'bolt' =>'<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/>',
             'eye' =>'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
             'logout' => '<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>',
@@ -70,7 +83,7 @@
                             <span class="{{ $active ? 'text-white' : 'text-slate-500' }}">{!! $svg($icon) !!}</span>
                             <span class="flex-1">{{ $label }}</span>
                             @if ($badge)
-                                <span class="min-w-[1.375rem] rounded-full bg-primary-600 px-1.5 py-0.5 text-center text-[11px] font-semibold text-white" title="{{ $badge === 'ON' ? 'Chương trình đang diễn ra' : ($label === 'Bình luận' ? 'Bình luận chờ duyệt' : 'Bài nháp chưa đăng') }}">{{ $badge }}</span>
+                                <span class="min-w-[1.375rem] rounded-full bg-primary-600 px-1.5 py-0.5 text-center text-[11px] font-semibold text-white" title="{{ $badge === 'ON' ? 'Chương trình đang diễn ra' : ($label === 'Bình luận' ? 'Bình luận chờ duyệt' : ($label === 'Liên hệ' ? 'Tin nhắn chưa xử lý' : 'Bài nháp chưa đăng')) }}">{{ $badge }}</span>
                             @endif
                         </a>
                     @endforeach

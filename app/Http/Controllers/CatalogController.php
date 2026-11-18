@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\Product;
 use App\Support\SiteImage;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -104,19 +105,40 @@ class CatalogController extends Controller
     public function search(Request $request): View
     {
         $term = trim((string) $request->query('q'));
-        // Thoát ký tự đại diện của LIKE để "%" hay "_" khách gõ không khớp mọi sản phẩm.
-        // Dùng "!" làm ký tự thoát (chạy giống nhau trên MySQL và SQLite).
-        $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_substr($term, 0, 100)).'%';
-        $products = $term === ''
-            ? collect()
-            : Product::active()
-                ->where(fn ($q) => $q->whereRaw("name like ? escape '!'", [$like])
-                    ->orWhereRaw("sku like ? escape '!'", [$like])
-                    ->orWhereRaw("brand like ? escape '!'", [$like]))
-                ->take(50)
-                ->get();
+        $products = $term === '' ? collect() : Product::active()->search($term)->take(50)->get();
 
         return view('pages.search', compact('term', 'products'));
+    }
+
+    /** Gợi ý tức thì cho ô tìm kiếm ở header (JSON): tối đa 6 sản phẩm + 3 danh mục. */
+    public function suggest(Request $request): JsonResponse
+    {
+        $term = trim((string) $request->query('q'));
+        if (mb_strlen($term) < 2) {
+            return response()->json(['products' => [], 'categories' => [], 'total' => 0]);
+        }
+
+        $query = Product::active()->search($term);
+        $total = (clone $query)->count();
+        $products = $query->take(6)->get()->map(function (Product $p) {
+            $price = $p->currentPrice();
+
+            return [
+                'name' => $p->name,
+                'sku' => $p->sku,
+                'url' => $p->url(),
+                'image' => $p->mainImage(),
+                'price' => $price ? Product::money($price) : 'Liên hệ báo giá',
+                'old_price' => $p->flashItem() && $p->price ? Product::money((int) $p->price) : null,
+            ];
+        });
+
+        $like = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_substr($term, 0, 100)).'%';
+        $categories = Category::active()->whereRaw("name like ? escape '!'", [$like])->orderBy('name')->take(3)->get()
+            ->map(fn (Category $c) => ['name' => $c->name, 'url' => $c->url()]);
+
+        return response()->json(['products' => $products, 'categories' => $categories, 'total' => $total])
+            ->header('X-Robots-Tag', 'noindex');
     }
 
     private function brandList(): Collection
@@ -126,9 +148,18 @@ class CatalogController extends Controller
             ->where('brand', '!=', '')
             ->selectRaw('brand, count(*) as total')
             ->groupBy('brand')
-            ->orderBy('brand')
             ->get()
-            ->map(fn ($row) => ['name' => $row->brand, 'slug' => Str::slug($row->brand), 'total' => $row->total]);
+            // Gộp các cách viết của cùng 1 thương hiệu ("DELI" / "Deli"): lấy cách viết có nhiều sản phẩm nhất làm tên
+            ->groupBy(fn ($row) => Str::slug($row->brand))
+            ->map(fn ($rows, $slug) => ['name' => $rows->sortByDesc('total')->first()->brand, 'slug' => $slug, 'total' => $rows->sum('total'), 'names' => $rows->pluck('brand')->all()])
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+    }
+
+    /** Mọi cách viết tên của 1 thương hiệu (theo slug). */
+    private function brandNames(string $slug): array
+    {
+        return $this->brandList()->firstWhere('slug', $slug)['names'] ?? [];
     }
 
     public function brandIndex(): View
@@ -141,14 +172,32 @@ class CatalogController extends Controller
         $brand = $this->brandList()->firstWhere('slug', $slug);
         abort_unless($brand, 404);
 
-        $products = Product::active()
-            ->where('brand', $brand['name'])
-            ->tap(fn ($q) => $this->applySort($q, $request->query('sort')))
-            ->paginate(20)
-            ->withQueryString();
-        self::abortIfPageOutOfRange($products);
+        abort_if((int) $request->query('page', 1) > 1, 404); // trang thương hiệu không chia trang (tránh trang rỗng 200)
 
-        return view('pages.brand', compact('brand', 'products'));
+        // Tất cả sản phẩm của thương hiệu (gộp các cách viết như "DELI" / "Deli"), chia theo danh mục gốc
+        $products = Product::active()->with('category')
+            ->whereIn('brand', $this->brandNames($brand['slug']))
+            ->tap(fn ($q) => $this->applySort($q, $request->query('sort')))
+            ->take(1000)->get();
+
+        $categories = Category::get(['id', 'name', 'slug', 'parent_id', 'sort_order'])->keyBy('id');
+        $rootOf = function (?int $id) use ($categories) {
+            $c = $id ? $categories->get($id) : null;
+            for ($i = 0; $c && $c->parent_id && $i < 10; $i++) {
+                $c = $categories->get($c->parent_id) ?? $c;
+            }
+
+            return $c;
+        };
+        $groups = $products->groupBy(fn ($p) => $rootOf($p->category_id)?->id ?? 0)
+            ->map(fn ($items, $id) => ['category' => $categories->get($id), 'items' => $items])
+            ->sortBy(fn ($g) => [$g['category'] ? 0 : 1, $g['category']->sort_order ?? 0, $g['category']->name ?? ''])
+            ->values();
+
+        return view('pages.brand', [
+            'brand' => $brand, 'groups' => $groups, 'total' => $products->count(),
+            'banner' => SiteImage::brandBanner($brand['slug']), 'logo' => SiteImage::brand($brand['slug']),
+        ]);
     }
 
     /** ?page=999 vượt quá số trang thật -> 404 (tránh trang rỗng trả 200 / soft 404). */

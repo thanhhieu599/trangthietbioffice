@@ -7,7 +7,6 @@
         <input type="text" name="slug" x-model="f.slug" @input="slugTouched = true" @blur="f.slug = slugify(f.slug)"
                class="w-full min-w-0 bg-white px-3 py-2 text-sm text-adm-ink focus:outline-none" placeholder="tu-dong-tao-tu-tieu-de">
     </div>
-    <span class="mt-0.5 block text-xs text-slate-500">Ngắn gọn, không dấu, chứa từ khóa. Tự tạo từ tiêu đề nếu để trống.</span>
     <span x-show="slugChanged" x-cloak class="mt-1.5 block rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-600/20">
         Bạn đang đổi đường dẫn. Khi lưu, link cũ sẽ tự chuyển hướng 301 sang link mới (không mất thứ hạng Google).
     </span>

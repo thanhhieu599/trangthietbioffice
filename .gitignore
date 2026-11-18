@@ -40,3 +40,4 @@ Thumbs.db
 !/public/images/editor/uploads/.gitkeep
 /public/images/flash/uploads/*
 !/public/images/flash/uploads/.gitkeep
+/public/images/brands/banners/*

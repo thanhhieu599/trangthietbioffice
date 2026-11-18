@@ -5,7 +5,6 @@
 
 @section('content')
 <h1 class="adm-h1">Bình luận bài viết</h1>
-<p class="adm-sub">Bình luận mới luôn chờ duyệt, chỉ hiện trên website sau khi bạn bấm “Duyệt”.</p>
 
 <nav class="mt-5 flex flex-wrap gap-1 rounded-xl bg-slate-200/60 p-1 text-sm w-max">
     @foreach (['pending' => 'Chờ duyệt ('.$counts['pending'].')', 'approved' => 'Đã duyệt ('.$counts['approved'].')', 'all' => 'Tất cả'] as $key => $label)

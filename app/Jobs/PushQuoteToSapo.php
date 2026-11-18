@@ -25,7 +25,7 @@ class PushQuoteToSapo implements ShouldQueue
     public function handle(SapoClient $sapo): void
     {
         $q = $this->quote->fresh(['items.product', 'user']);
-        if (! $q || ! $sapo->enabled()) {
+        if (! $q || ! $sapo->canWrite()) { // đang tắt gửi (SAPO_SYNC_ENABLED=false): để nguyên, không gửi
             return;
         }
         if ($q->sapo_order_id) {

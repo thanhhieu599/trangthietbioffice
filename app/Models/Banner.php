@@ -21,7 +21,19 @@ class Banner extends Model
             'hint' => 'Hàng ảnh nhỏ ngay dưới banner chính, tự chia cột đều: 3 ảnh = 3 cột, 4 ảnh = 4 cột (tối đa 4).'],
     ];
 
-    protected $fillable = ['position', 'title', 'image', 'image_mobile', 'link', 'sort_order', 'is_active'];
+    /** Ảnh trang Liên hệ (quản lý tại Quản trị > Liên hệ, dùng chung bảng banners). */
+    public const CONTACT_POSITIONS = [
+        'contact_hero' => ['label' => 'Ảnh nền đầu trang Liên hệ', 'size' => '1600 × 500', 'ratio' => '1600/500', 'max' => 1, 'minWidth' => 1000,
+            'hint' => 'Ảnh văn phòng, kho hàng hoặc đội ngũ. Nên dùng ảnh không có chữ; phần bên trái sẽ được phủ tối để đặt tiêu đề.'],
+    ];
+
+    /** Tất cả vị trí hợp lệ (trang chủ + trang Liên hệ). */
+    public static function allPositions(): array
+    {
+        return self::POSITIONS + self::CONTACT_POSITIONS;
+    }
+
+    protected $fillable =['position', 'title', 'image', 'image_mobile', 'link', 'sort_order', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
 
@@ -32,7 +44,7 @@ class Banner extends Model
 
     public function positionInfo(): array
     {
-        return self::POSITIONS[$this->position] ?? self::POSITIONS['slider'];
+        return self::allPositions()[$this->position] ?? self::POSITIONS['slider'];
     }
 
     public function imageUrl(?string $path = null): string
